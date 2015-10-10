@@ -1,0 +1,52 @@
+/* --- Centering --- */
+.doc-center {
+    padding: 50px 0;
+    padding-top: 50px;
+    padding-right-value: 0px;
+    padding-bottom: 50px;
+    padding-left-value: 0px;
+    padding-left-ltr-source: physical;
+    padding-left-rtl-source: physical;
+    padding-right-ltr-source: physical;
+    padding-right-rtl-source: physical;
+    position: relative;
+    text-align: center;
+}
+/* --- Input center  --- */
+.input-center {
+    margin: 0 auto;
+}
+/* --- Footer --- */
+.doc-footer {
+    border-top: 1px solid #ecf0f1;
+    padding: 50px 0;
+    padding-top: 50px;
+    padding-right-value: 0px;
+    padding-bottom: 50px;
+    padding-left-value: 0px;
+    padding-left-ltr-source: physical;
+    padding-left-rtl-source: physical;
+    padding-right-ltr-source: physical;
+    padding-right-rtl-source: physical;
+    position: relative;
+    text-align: center;
+}
+.doc-footer p {
+    margin-bottom: 15px;
+}
+.doc-footer ul {
+    list-style: none;
+}
+.doc-footer li {
+    display: inline-block;
+    padding: 0 2px;
+}
+.doc-footer .btn {
+    background: #3498db;
+    color: #fff;
+    font-size: 20px;
+    margin: 5px 15px;
+}
+.doc-footer .btn:hover {
+    color: #fff;
+}

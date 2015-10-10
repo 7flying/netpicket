@@ -1,0 +1,14 @@
+<!doctype html>
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block nexttoicon %} Netpicket{% endblock  %}
+{% block title %}Netpicket - {{code}}{% endblock %}
+
+{% block page_content %}
+<div>
+  <h2>Error {{code}} - {{desc}}</h2>
+  <p>{{lmessage}}</p>
+  <br>
+  <p>Please, back to <a href="{{ url_for('main_page')}}">home</a></p>
+</div>
+{% endblock %}
