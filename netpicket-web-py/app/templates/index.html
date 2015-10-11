@@ -4,6 +4,16 @@
 
 {% block page_content %}
 
-<h4>Hello world!</h4>
+<div class="row doc-center">
+  <div class="col-md-6 col-md-offset-3">
+    <img src="{{url_for('static', filename='img/logo-round-256.png')}}"
+         class="img-responsive center" alt="Netpicket logo round'">
+    <h2>Welcome to Netpicket</h2>
+    <a type="button" class="btn btn-net-dark btn-lg btn-link" role="button"
+            href="{{url_for('oauth_authorize', provider='google')}}">
+      Log in with Google
+    </a>
+  </div>
+</div>
 
 {% endblock %}

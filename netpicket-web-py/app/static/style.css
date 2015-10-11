@@ -16,6 +16,11 @@
 .input-center {
     margin: 0 auto;
 }
+/* --- Img center --- */
+img.center {
+    display: block;
+    margin: 0 auto;
+}
 /* --- Footer --- */
 .doc-footer {
     border-top: 1px solid #ecf0f1;
@@ -49,4 +54,32 @@
 }
 .doc-footer .btn:hover {
     color: #fff;
+}
+/* --- Button colors --- */
+.btn-net-dark {
+    color: #fff;
+    background-color: #0C7367; /* reference */
+    border-color: #0a5c52; /* monochromatic 3*/
+}
+.btn-net-dark:focus,
+.btn-net-dark.focus {
+    color: #fff;
+    background-color: #0d8476; /* monochromatic 2 */
+    border-color: #00302A; /* reference in rgb, -> value % 2 - 9*/
+}
+.btn-net-dark:hover {
+  color: #fff;
+  background-color: #0d8476; /* monochromatic 2*/
+  border-color: #0C7367; /* reference in rgb-> r - 35, g - 52, b - 35*/
+}
+
+.btn-net-normal {
+    color: #fff;
+    background-color: #099686; /* reference! */
+    border-color: #087e71; 
+}
+.btn-net-light {
+    color: #fff;
+    background-color: #12B2A0;
+    border-color: #109b8b;
 }
