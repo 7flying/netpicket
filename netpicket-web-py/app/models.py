@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from app import db
+from app import db, rd
+
 
 class User(db.Model):
     """Simple User."""
@@ -30,3 +31,30 @@ class User(db.Model):
     def is_anonymous(self):
         """False, as anonymous users aren't supported."""
         return False
+
+# ---- Keys ---- #
+USER = 'user:'
+F_NETWORK = 'network'
+
+# --- User-Networks --- #
+
+def set_network(user, nname):
+    # something
+    _l_set_network(user, nname)
+
+def delete_network(user, nname):
+    # something
+    _l_del_network(user, nname)
+
+# -- List of all Networks a  -- #
+
+def _l_set_network(user, nname):
+    pass
+
+def _l_del_network(user, nname):
+    pass
+
+
+
+
+# --- User

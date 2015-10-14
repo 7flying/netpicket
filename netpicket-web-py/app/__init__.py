@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import redis
+
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
+
 
 app = Flask(__name__, static_url_path='')
 Bootstrap(app)
@@ -12,6 +15,11 @@ app.config.from_object('config')
 
 # SQl Alchemy
 db = SQLAlchemy(app)
+
+# Redis
+rd = redis.StrictRedis(host=app.config['REDIS_HOST'],
+                       port=app.config['REDIS_PORT'],
+                       db=app.config['REDIS_DB'])
 
 # Login extension
 login_manager = LoginManager()

@@ -3,6 +3,9 @@
 \#*\#
 .\#*
 
+# Redis
+*.rdb
+
 # Clojure
 pom.xml
 pom.xml.asc
