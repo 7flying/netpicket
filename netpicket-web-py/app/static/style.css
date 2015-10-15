@@ -83,3 +83,14 @@ img.center {
     background-color: #12B2A0;
     border-color: #109b8b;
 }
+/* --- Active  --- */
+.net-active {
+    color: #fff;
+    background-color: #0C7367; /* reference */
+    border-color: #0a5c52;
+    
+}
+/* --- Label as badge --- */
+.label-as-badge {
+    border-radius: 1em;
+}

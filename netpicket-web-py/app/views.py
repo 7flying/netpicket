@@ -40,7 +40,13 @@ def callback(provider):
     user.authenticated = True
     db.session.add(user)
     db.session.commit()
-    return redirect(url_for('profile'))
+    return redirect(url_for('dashboard'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """ """
+    return render_template('dashboard.html')
 
 @app.route('/profile', methods=['GET'])
 @login_required
