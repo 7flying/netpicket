@@ -34,7 +34,13 @@ class User(db.Model):
 
 # ---- Keys ---- #
 USER = 'user:'
+
 F_NETWORK = 'network'
+
+# --- User-id --- #
+
+def get_user_id(user):
+    pass
 
 # --- User-Networks --- #
 
@@ -46,7 +52,7 @@ def delete_network(user, nname):
     # something
     _l_del_network(user, nname)
 
-# -- List of all Networks a  -- #
+# -- List of all Networks a user has -- #
 
 def _l_set_network(user, nname):
     pass
@@ -55,6 +61,3 @@ def _l_del_network(user, nname):
     pass
 
 
-
-
-# --- User
