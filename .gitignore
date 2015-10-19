@@ -3,8 +3,10 @@
 \#*\#
 .\#*
 
-# Redis
+# Databases
 *.rdb
+*.db
+
 
 # Clojure
 pom.xml
