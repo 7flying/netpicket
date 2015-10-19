@@ -7,39 +7,38 @@
 <div class="row">
   <br>
   <!-- menu -->
-  <div class="col-md-3">
+  <div class="col-md-3 col-sm-3 col-xs-12">
     <div style="margin 20px">
       <div class="panel panel-default">
 		<div class="panel-heading">Menu</div>
 		<!-- List group -->
 		<div class="list-group">
-          <button type="button" class="list-group-item">
+          <a type="button" class="list-group-item btn-link" role="button"
+             href="{{url_for('dashboard', section='timeline')}}">
             Timeline
-            <span class="badge">50</span>
-          </button>
-          <button type="button" class="list-group-item">
+            <span class="badge"><i class="fa fa-home"></i></span>
+          </a>
+          <a type="button" class="list-group-item btn-link" role="button"
+             href="{{url_for('dashboard', section='networks')}}">
             My networks
             <span class="badge">2</span>
-          </button>
+          </a>
+          <a type="button" class="list-group-item btn-link" role="button"
+             href="{{url_for('dashboard', section='alerts')}}">
+            Alerts
+            <span class="badge">2</span>
+          </a>
 		</div>
 	  </div>
     </div>
   </div><!-- end menu -->
+
   
-  <div class="col-md-9">
+  <div class="col-md-9 col-sm-9 col-xs-12">
+    {% if section == 'timeline' %}
+    <!-- TIMELINE -->
     <h4><small><strong>UPDATED 15 MINUTES AGO</strong></small></h4><br>
     <dl class="dl-horizontal">
-      <dt>Thu 15 Oct</dt>
-      <dd>
-        <table class="table">
-          <tbody>
-            <tr>
-              <td>15:00</td>
-              <td class="text-success"><i class="fa fa-smile-o"></i> No alerts</td>
-            </tr>
-          </tbody>
-        </table>
-      </dd>
       
       <dt>Wed 14 Oct</dt>
       <dd>
@@ -62,7 +61,32 @@
           </tbody>
         </table>
       </dd>
+      <dt>Thu 15 Oct</dt>
+      <dd>
+        <table class="table">
+          <tbody>
+            <tr>
+              <td>15:00</td>
+              <td class="text-success"><i class="fa fa-smile-o"></i> No alerts</td>
+            </tr>
+            <tr>
+              <td>10:00</td>
+              <td class="text-danger"><i class="fa fa-warning"></i>
+                Unkwnown host detected</td>
+            </tr>
+          </tbody>
+        </table>
+      </dd>
     </dl>
+    <!-- END TIMELINE -->
+    {% else %}
+    {% if section == 'networks' %}
+    
+    {% else %}
+    {% if section == 'alerts' %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
   </div>
 </div>
 

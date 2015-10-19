@@ -42,11 +42,12 @@ def callback(provider):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-@app.route('/dashboard')
+@app.route('/dashboard/', defaults={'section': 'timeline'})
+@app.route('/dashboard/<section>')
 @login_required
-def dashboard():
+def dashboard(section):
     """ """
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', section=section)
 
 @app.route('/profile', methods=['GET'])
 @login_required
