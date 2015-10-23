@@ -81,13 +81,70 @@
     <!-- END TIMELINE -->
     {% else %}
     {% if section == 'networks' %}
-    
-    {% else %}
-    {% if section == 'alerts' %}
-    {% endif %}
-    {% endif %}
-    {% endif %}
-  </div>
-</div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <span><i class="fa fa-wifi"></i></span>
+            <strong>Network name</strong>
+          </div>
+          <div class="panel-body">
+            <h5><strong>General</strong></h5>
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td>Interface</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Hardware Address</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Speed</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Security</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+            <h5><strong>IPv4</strong></h5>
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td>Address</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Subnet Mask</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Default Route</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Primary DNS</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Secondary DNS</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-{% endblock %}
+      {% else %}
+      {% if section == 'alerts' %}
+      {% endif %}
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% endblock %}
