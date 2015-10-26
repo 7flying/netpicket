@@ -46,7 +46,7 @@ def callback(provider):
 @app.route('/dashboard/<section>')
 @login_required
 def dashboard(section):
-    """ """
+    """Shows the app's dashboard. """
     return render_template('dashboard.html', section=section)
 
 @app.route('/profile', methods=['GET'])

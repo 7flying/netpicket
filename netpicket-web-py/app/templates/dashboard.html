@@ -24,11 +24,17 @@
             <span class="badge">2</span>
           </a>
           <a type="button" class="list-group-item btn-link" role="button"
+             href="{{url_for('dashboard', section='buoys')}}">
+            Buoys
+            <span class="badge">2</span>
+          </a>
+		  
+          <a type="button" class="list-group-item btn-link" role="button"
              href="{{url_for('dashboard', section='alerts')}}">
             Alerts
             <span class="badge">2</span>
           </a>
-		</div>
+        </div>
 	  </div>
     </div>
   </div><!-- end menu -->
@@ -136,6 +142,15 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="panel-footer">
+            <div class="pull-right">
+              <button class="btn btn-default"
+                      type="button">
+                <span class="glyphicon glyphicon-repeat"></span> Rescan
+              </button>
+            </div>
+            <div class="clearfix"></div>
           </div>
         </div>
       </div>
