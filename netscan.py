@@ -1,8 +1,40 @@
 # -*- coding: utf-8 -*-
 
+import netifaces
+
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 
+
+def get_network_buoy_info(interface):
+    """Returns info about the network and buoy in the given net interface."""
+    ret = {}
+    n_info = netifaces.interfaces().get(interface)
+    if n_info:
+        """
+        AF_LINK: {17: [{'broadcast': 'ff:ff:ff:ff:ff:ff',
+                        'addr': 'a0:ce:c8:05:35:f9'}],
+        AF_INET:  2: [{'broadcast': '10.172.203.255', 'netmask': '255.255.255.0',
+                       'addr': '10.172.203.199'}],
+        AF_INET6: 10: [{'netmask': 'ffff:ffff:ffff:ffff::',
+                        'addr': 'fe80::a2ce:c8ff:fe05:35f9%eth1'}]}
+        """
+        # Get the addresses for the given interface
+        ret['AF_INET'] = n_info.get(netifaces.AF_INET) # IPv4
+        ret['AF_INET6'] = n_info.get(netifaces.AF_INET6) # IPv6
+        ret['AF_LINK'] = n_info[netifaces.AF_LINK] # link layer interface
+        """
+        {2: [('10.0.1.1', 'en0', True), ('10.2.1.1', 'en1', False)],
+         30: [('fe80::1', 'en0', True)],
+         'default': { 2: ('10.0.1.1', 'en0'), 30: ('fe80::1', 'en0') }}
+        """
+        # Get the default gateways for IPv4 and IPv6
+        ret['gateways'] = {}
+        ret['gateways']['AF_INET'] = netifaces.gateways()['default'].get(
+            netifaces.AF_INET)
+        ret['gateways']['AF_INET6'] = netifaces.gateways()['default'].get(
+            netifaces.AF_INET6)
+    return ret
 
 def host_discovery(network):
     """Performs host discovery in the given network.
