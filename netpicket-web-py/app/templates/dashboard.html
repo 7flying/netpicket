@@ -7,7 +7,7 @@
 <div class="row">
   <br>
   <!-- menu -->
-  <div class="col-md-3 col-sm-3 col-xs-12">
+  <div class="col-md-2 col-sm-2 col-xs-12">
     <div class="panel panel-default">
 	  <div class="panel-heading">Menu</div>
 	  <!-- List group -->
@@ -100,7 +100,7 @@
             <tr>
               <td>10:00</td>
               <td class="text-danger"><i class="fa fa-warning"></i>
-                Unkwnown host detected</td>
+                Unknown host detected</td>
             </tr>
           </tbody>
         </table>
@@ -179,58 +179,106 @@
 
       {% else %}
       {% if section == 'alerts' %}
-      <p>alerts</p>
-      {% else %}
-      {% if section == 'wblists' %}
       <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <span><i class="fa fa-file-text-o"></i></span>
-            <strong>White list</strong>
+        <div class="panel panel-danger">
+          <div class="panel-heading"><i class="fa fa-warning"></i>
+            <strong>Unknown host detected</strong>
           </div>
           <div class="panel-body">
-            <div class="table-responsive">
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <td><strong>Hostname</strong></td>
-                    <td><strong>MAC</strong></td>
-                    <td><strong>Address</strong></td>
-                    <td><strong>Network</strong></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="col-md-6">
+              <div class="table-responsive">
+                <table class="table">
+                  <tbody>
+                    <tr><td><strong>Hostname</strong></td><td>H4x0r</td></tr>
+                    <tr><td><strong>IP</strong></td><td>192.168.1.25</td></tr>
+                    <tr><td><strong>MAC</strong></td><td>00:0a:95:9d:68:16</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="col-md-6">
+              
             </div>
           </div>
         </div>
       </div>
       <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <span><i class="fa fa-file-text"></i></span>
-            <strong>Black list</strong>
+        <div class="panel panel-warning">
+          <div class="panel-heading"><i class="fa fa-exclamation-circle"></i>
+            <strong>Vulnerable host</strong>
           </div>
           <div class="panel-body">
-            <div class="table-responsive">
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <td><strong>Hostname</strong></td>
-                    <td><strong>MAC</strong></td>
-                    <td><strong>Address</strong></td>
-                    <td><strong>Network</strong></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="col-md-6">
+              <div class="table-responsive">
+                <table class="table">
+                  <tbody>
+                    <tr><td><strong>Hostname</strong></td><td>XPS</td></tr>
+                    <tr><td><strong>IP</strong></td><td>192.168.1.36</td></tr>
+                    <tr><td><strong>MAC</strong></td><td>0b:0a:95:9d:68:14</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <a
+                 href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-100001">
+                CVE-2014-100001</a> Remote code injection.
             </div>
           </div>
         </div>
       </div>
-      {% endif %}
-      {% endif %}
-      {% endif %}
-      {% endif %}
     </div>
+    {% else %}
+    {% if section == 'wblists' %}
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span><i class="fa fa-file-text-o"></i></span>
+          <strong>White list</strong>
+        </div>
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td><strong>Hostname</strong></td>
+                  <td><strong>MAC</strong></td>
+                  <td><strong>Address</strong></td>
+                  <td><strong>Network</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span><i class="fa fa-file-text"></i></span>
+          <strong>Black list</strong>
+        </div>
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td><strong>Hostname</strong></td>
+                  <td><strong>MAC</strong></td>
+                  <td><strong>Address</strong></td>
+                  <td><strong>Network</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
   </div>
+</div>
 
-  {% endblock %}
+{% endblock %}
