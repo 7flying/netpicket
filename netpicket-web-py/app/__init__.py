@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import redis
+import redis, gevent
+
+from gevent import monkey
+monkey.patch_all()
 
 from flask import Flask
 from flask_bootstrap import Bootstrap

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import random
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
-from flask import render_template, redirect, url_for, g
+from flask import render_template, redirect, url_for, g, json, Response
 
 from app.auth import OAuthSignIn
 from app import app, db, login_manager
@@ -79,3 +80,12 @@ def logout():
 @app.before_request
 def before_request():
     g.user = current_user
+
+def event():
+    while True:
+        yield 'data: ' + json.dumps([x for x in range(2)]) + '\n\n'
+        gevent.sleep(1)
+
+@app.route('/stream/', methods=['GET', 'POST'])
+def stream():
+    return Response(event(), mimetype="text/event-stream")
