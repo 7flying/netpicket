@@ -64,48 +64,13 @@
   <div class="col-md-9 col-sm-9 col-xs-12">
     {% if section == 'timeline' %}
     <!-- TIMELINE -->
-    <h4><small><strong>UPDATED 15 MINUTES AGO</strong></small></h4><br>
-    <dl class="dl-horizontal" id="timeline-updates">
-      
-      <dt>Wed 14 Oct</dt>
-      <dd>
-        <table class="table">
-          <tbody>
-            <tr>
-              <td>15:00</td>
-              <td class="text-success">
-                <i class="fa fa-smile-o"></i> No alerts</td>
-            </tr>
-            <tr>
-              <td>10:00</td>
-              <td class="text-danger"><i class="fa fa-warning"></i>
-                Unkwnown host detected</td>
-            </tr>
-            <tr>
-              <td>09:00</td>
-              <td class="text-warning"><i class="fa fa-exclamation-circle"></i>
-                Vulnerable host</td>
-            </tr>
-          </tbody>
-        </table>
-      </dd>
-      <dt>Thu 15 Oct</dt>
-      <dd>
-        <table class="table">
-          <tbody>
-            <tr>
-              <td>15:00</td>
-              <td class="text-success"><i class="fa fa-smile-o"></i> No alerts</td>
-            </tr>
-            <tr>
-              <td>10:00</td>
-              <td class="text-danger"><i class="fa fa-warning"></i>
-                Unknown host detected</td>
-            </tr>
-          </tbody>
-        </table>
-      </dd>
-    </dl>
+    <h4>
+      <small>
+        <strong>UPDATED AT </strong><strong id="updated-ago">22:56</strong>
+      </small>
+    </h4>
+    <br>
+    <dl class="dl-horizontal" id="timeline-updates"></dl>
     <!-- END TIMELINE -->
     {% else %}
     {% if section == 'networks' %}

@@ -13,3 +13,13 @@
     ```bash
     export G_CLIENT_SECRET="<the secret>"
     ```
+
+Launch for testing:
+
+```bash
+gunicorn --reload -b 127.0.0.1:5000 -k gevent app:app
+```
+
+## Notes
+
+See [CVE datasource](http://www.cvedetails.com/).

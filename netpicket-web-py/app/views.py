@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import random
+import datetime, random, string, gevent
+import const, config
+
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
 from flask import render_template, redirect, url_for, g, json, Response
 
 from app.auth import OAuthSignIn
-from app import app, db, login_manager
+from app import app, db, red, login_manager
 from app.models import User
 
 
@@ -81,11 +83,32 @@ def logout():
 def before_request():
     g.user = current_user
 
-def event():
+def timeline_event_stream():
+    """Handles timeline event notifications."""
+    pubsub = red.pubsub()
+    pubsub.subscribe('timeline')
     while True:
-        yield 'data: ' + json.dumps([x for x in range(2)]) + '\n\n'
-        gevent.sleep(1)
+        # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
+        # 'priority': 1, 'text': 'Hello'}
+        mess = pubsub.get_message()
+        if config.RANDOM_TIMELINE:
+            if random.randint(0, 1) == 0:
+                now = datetime.datetime.now()
+                text = ''.join(random.choice(string.letters) \
+                                                for _ in range(15))
+                mess = {}
+                mess['data'] = {'date': now.strftime(const.STRTIME_DATE),
+                                'time': now.strftime(const.STRTIME_TIME),
+                                'day': now.strftime(const.STRTIME_DAY),
+                                'priority': const.PRIORITY_COLOUR[
+                                    random.randint(0, 3)],
+                                'text': text}
+        if mess:
+            yield 'data: ' + json.dumps(mess.get('data')) + '\n\n'
+        gevent.sleep(5)
 
-@app.route('/stream/', methods=['GET', 'POST'])
-def stream():
-    return Response(event(), mimetype="text/event-stream")
+@app.route('/timeline/', methods=['GET', 'POST'])
+@login_required
+def timeline():
+    """Subscribe/receive timeline events."""
+    return Response(timeline_event_stream(), mimetype='text/event-stream')

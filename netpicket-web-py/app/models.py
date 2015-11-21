@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from app import db, rd
+from app import db, red
 
 
 class User(db.Model):

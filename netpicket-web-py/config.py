@@ -21,3 +21,6 @@ GOOGLE_LOGIN_CLIENT_ID = '25024647321-ch635ssha0lmo73lr24688slcb4mak4j.apps.goog
 GOOGLE_LOGIN_CLIENT_SECRET = os.environ['G_CLIENT_SECRET']
 OAUTH_CREDENTIALS = {'google': {'id': GOOGLE_LOGIN_CLIENT_ID,
                                 'secret': GOOGLE_LOGIN_CLIENT_SECRET}}
+
+# Debugging
+RANDOM_TIMELINE = True

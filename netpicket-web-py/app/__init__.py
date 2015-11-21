@@ -20,9 +20,9 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 
 # Redis
-rd = redis.StrictRedis(host=app.config['REDIS_HOST'],
-                       port=app.config['REDIS_PORT'],
-                       db=app.config['REDIS_DB'])
+red = redis.StrictRedis(host=app.config['REDIS_HOST'],
+                        port=app.config['REDIS_PORT'],
+                        db=app.config['REDIS_DB'])
 
 # Login extension
 login_manager = LoginManager()
