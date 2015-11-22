@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+This module holds the views of the app.
+"""
 
 import datetime, random, string, gevent
 import const, config
@@ -94,8 +97,7 @@ def timeline_event_stream():
         if config.RANDOM_TIMELINE:
             if random.randint(0, 1) == 0:
                 now = datetime.datetime.now()
-                text = ''.join(random.choice(string.letters) \
-                                                for _ in range(15))
+                text = ''.join(random.choice(string.letters) for _ in range(15))
                 mess = {}
                 mess['data'] = {'date': now.strftime(const.STRTIME_DATE),
                                 'time': now.strftime(const.STRTIME_TIME),
