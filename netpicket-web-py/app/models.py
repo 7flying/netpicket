@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+App's models and db management.
+"""
 
+import app.const as const
 from app import db, red
-
 
 class User(db.Model):
     """Simple User."""
@@ -37,11 +40,6 @@ USER = 'user:'
 
 F_NETWORK = 'network'
 
-# --- User-id --- #
-
-def get_user_id(user):
-    pass
-
 # --- User-Networks --- #
 
 def set_network(user, nname):
@@ -61,3 +59,40 @@ def _l_del_network(user, nname):
     pass
 
 # --- Alerts ---#
+_KEY_EVENT_ID = 'event-id-auto:'
+_KEY_EVENT_USER = 'event:{0}:user:{1}'
+_ATTR_EVENT_DESC = 'desc'
+_ATTR_EVENT_DATE = 'date'
+_ATTR_EVENT_TIME = 'time'
+_ATTR_EVENT_PRIO = 'priority'
+
+_KEY_EVENTS_USER_DAY = 'event-ids:user:{0}:day:{1}'
+
+def _get_key_event():
+    """Returns an str with the next alert key id."""
+    ret = red.incr(_KEY_EVENT_ID)
+    return str(ret)
+
+def save_event(user_id, event_desc, date, time, priority):
+    """Saves an alert."""
+    key = _get_key_event()
+    red.rpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
+    red.hset(_ATTR_EVENT_DESC, _KEY_EVENT_USER.format(key, user_id), event_desc)
+    red.hset(_ATTR_EVENT_DATE, _KEY_EVENT_USER.format(key, user_id), date)
+    red.hset(_ATTR_EVENT_TIME, _KEY_EVENT_USER.format(key, user_id), time)
+    red.hset(_ATTR_EVENT_TIME, _KEY_EVENT_USER.format(key, user_id),
+             priority)
+
+def get_event(event_id, user_id):
+    """Retrieves an event."""
+    return red.hgetall(_KEY_EVENT_USER.format(event_id, user_id))
+
+def get_user_events(user_id, day):
+    """Returns all the events for the user for the given day."""
+    events = red.lrange(_KEY_EVENTS_USER_DAY.format(user_id, day), 0, -1)
+    ret_events = []
+    for event in events:
+        tmp = get_event(event, user_id)
+        if tmp is not None:
+            ret_events.append(tmp)
+    return ret_events
