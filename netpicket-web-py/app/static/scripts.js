@@ -32,7 +32,6 @@ function loadTimeline() {
 
 /* SSE for the timeline in the dashboard. */
 function timelineSSE() {
-    loadTimeline();
     var source = new EventSource("/timeline/");
     source.onmessage = function(msg) {
         var data = JSON.parse(msg.data);
@@ -74,9 +73,10 @@ function timelineSSE() {
             }
             document.getElementById("updated-ago").innerHTML = data.time;
             // save value
-            saveTimelineEventStorage(data.date,
+            /*saveTimelineEventStorage(data.date,
                                      document.getElementById(data.date).outerHTML, // dt
                                      document.getElementById(data.date + "-dd").outerHTML); // dd
+                                     */
         }
     }
 }

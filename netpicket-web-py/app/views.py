@@ -53,6 +53,8 @@ def callback(provider):
 @login_required
 def dashboard(section):
     """Shows the app's dashboard. """
+    if section == 'timeline':
+        pass # read from redis
     return render_template('dashboard.html', section=section)
 
 @app.route('/profile', methods=['GET'])
