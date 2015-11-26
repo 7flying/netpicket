@@ -58,12 +58,17 @@ def _l_set_network(user, nname):
 def _l_del_network(user, nname):
     pass
 
-# --- Alerts ---#
+# --- Events --- #
+# Events are stored in hashes, which hold the event's main properties.
+# The event id must be generated using _get_key_event().
+# When an event is stored its ID is also added to a list of events-day
+# for a given user. This last has the newest event at its 0 position.
 _KEY_EVENT_ID = 'event-id-auto:'
 _KEY_EVENT_USER = 'event:{0}:user:{1}'
 _ATTR_EVENT_DESC = 'desc'
-_ATTR_EVENT_DATE = 'date'
-_ATTR_EVENT_TIME = 'time'
+_ATTR_EVENT_DATE = 'date' #20151126
+_ATTR_EVENT_DAY = 'day' # Wed 5 Oct
+_ATTR_EVENT_TIME = 'time' #6:12
 _ATTR_EVENT_PRIO = 'priority'
 
 _KEY_EVENTS_USER_DAY = 'event-ids:user:{0}:day:{1}'
@@ -73,12 +78,13 @@ def _get_key_event():
     ret = red.incr(_KEY_EVENT_ID)
     return str(ret)
 
-def save_event(user_id, event_desc, date, time, priority):
+def save_event(user_id, event_desc, date, day, time, priority):
     """Saves an alert."""
     key = _get_key_event()
-    red.rpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
+    red.lpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
     red.hset(_ATTR_EVENT_DESC, _KEY_EVENT_USER.format(key, user_id), event_desc)
     red.hset(_ATTR_EVENT_DATE, _KEY_EVENT_USER.format(key, user_id), date)
+    red.hset(_ATTR_EVENT_DAY, _KEY_EVENT_USER.format(key, user_id), day)
     red.hset(_ATTR_EVENT_TIME, _KEY_EVENT_USER.format(key, user_id), time)
     red.hset(_ATTR_EVENT_TIME, _KEY_EVENT_USER.format(key, user_id),
              priority)
@@ -95,4 +101,5 @@ def get_user_events(user_id, day):
         tmp = get_event(event, user_id)
         if tmp is not None:
             ret_events.append(tmp)
+    print "user events:", ret_events
     return ret_events

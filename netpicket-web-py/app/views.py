@@ -12,8 +12,7 @@ from flask import render_template, redirect, url_for, g, json, Response
 
 from app.auth import OAuthSignIn
 from app import app, db, red, login_manager
-from app.models import User
-
+import app.models as models
 
 @app.route('/')
 def main_page():
@@ -37,9 +36,9 @@ def callback(provider):
         # TODO: OAuth failed -> redirect somewhere else
         return redirect(url_for('main_page'))
     # Check if the user exists in the db, else create
-    user = User.query.filter_by(email=email).first()
+    user = models.User.query.filter_by(email=email).first()
     if not user:
-        user = User(email, username)
+        user = models.User(email, username)
         db.session.add(user)
         db.session.commit()
     login_user(user, remember=True)
@@ -54,8 +53,14 @@ def callback(provider):
 def dashboard(section):
     """Shows the app's dashboard. """
     if section == 'timeline':
-        pass # read from redis
-    return render_template('dashboard.html', section=section)
+        now = datetime.datetime.now()
+        user_events = models.get_user_events(current_user.id,
+                                             now.strftime(const.STRTIME_DATE))
+        return render_template('dashboard.html', section=section,
+                               events=user_events)
+    else:
+        return render_template('dashboard.html', section=section,
+                               events=None)
 
 @app.route('/profile', methods=['GET'])
 @login_required
@@ -65,7 +70,7 @@ def profile():
 
 @login_manager.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return models.User.query.get(int(id))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -78,7 +83,7 @@ def login():
 @login_required
 def logout():
     """Logs out the user from the application."""
-    user = User.query.filter_by(id=current_user.id).first()
+    user = models.User.query.filter_by(id=current_user.id).first()
     logout_user()
     user.authenticated = False
     db.session.commit()
@@ -88,7 +93,7 @@ def logout():
 def before_request():
     g.user = current_user
 
-def timeline_event_stream():
+def timeline_event_stream(user_id):
     """Handles timeline event notifications."""
     pubsub = red.pubsub()
     pubsub.subscribe('timeline')
@@ -108,6 +113,10 @@ def timeline_event_stream():
                                     random.randint(0, 3)],
                                 'text': text}
         if mess:
+            # Store on the db, and send it to the client
+            models.save_event(user_id, mess['data']['text'],
+                              mess['data']['date'], mess['data']['day'],
+                              mess['data']['time'], mess['data']['priority'])
             yield 'data: ' + json.dumps(mess.get('data')) + '\n\n'
         gevent.sleep(5)
 
@@ -115,4 +124,4 @@ def timeline_event_stream():
 @login_required
 def timeline():
     """Subscribe/receive timeline events."""
-    return Response(timeline_event_stream(), mimetype='text/event-stream')
+    return Response(timeline_event_stream(current_user.id), mimetype='text/event-stream')

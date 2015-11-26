@@ -66,7 +66,12 @@
     <!-- TIMELINE -->
     <h4>
       <small>
-        <strong>UPDATED AT </strong><strong id="updated-ago">22:56</strong>
+        <strong>UPDATED AT </strong>
+        {% if events|length > 0 %}
+        <strong id="updated-ago">{{events[0].time}}</strong>
+        {% else %}
+        <strong id="updated-ago">...</strong>
+        {% endif %}
       </small>
     </h4>
     <br>
