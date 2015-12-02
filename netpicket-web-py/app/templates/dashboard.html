@@ -66,16 +66,45 @@
     <!-- TIMELINE -->
     <h4>
       <small>
-        <strong>UPDATED AT </strong>
-        {% if events|length > 0 %}
-        <strong id="updated-ago">{{events[0].time}}</strong>
+        <strong>UPDATED AT: </strong>
+        {% if events.keys()|length > 0 %}
+        <strong id="updated-ago">{{events[events.keys()[0]][0]['day']
+          ~ ' ' ~ events[events.keys()[0]][0]['time']}}</strong>
         {% else %}
         <strong id="updated-ago">...</strong>
         {% endif %}
       </small>
     </h4>
     <br>
-    <dl class="dl-horizontal" id="timeline-updates"></dl>
+    <dl class="dl-horizontal" id="timeline-updates">
+      {% if events.keys()|length > 0 %}
+      {% for date in events.keys() %}
+      <dt id="{{date}}">{{events[date][0]['day']}}</dt>
+      <dd id="{{date ~ '-dd'}}">
+        <table class="table">
+          <tbody id="{{date ~ '-table'}}">
+            {% for even in events[date] %}
+            <tr>
+              <td>{{even['time']}}</td>
+              {% if even['priority'] == 'G' %}
+              <td class="text-success"><i class="fa fa-smile-o"></i>
+                {% elif even['priority'] == 'O' %}
+              <td class="text-warning"><i class="fa fa-exclamation-circle"></i>
+                {% elif even['priority'] == 'R' %}
+              <td class="text-danger"><i class="fa fa-warning"></i>
+                {% else %} <!-- B and default -->
+              <td class="text-info"><i class="fa fa-info-circle"></i>
+                {% endif %}
+                {{even['desc']}}
+              </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+          <tbody>
+        </table>
+      </dd>
+      {% endif %}
+    </dl>
     <!-- END TIMELINE -->
     {% else %}
     {% if section == 'networks' %}
