@@ -81,11 +81,11 @@ def _get_key_event():
 def save_event(user_id, event_desc, date, day, time, priority):
     """Saves an alert."""
     key = _get_key_event()
-    print "save event key:", _KEY_EVENT_USER.format(key, user_id)
     pipe = red.pipeline()
     pipe.lpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DESC, event_desc)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DATE, date)
+    pipe.hset( _KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DATE, date)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DAY, day)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_TIME, time)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_PRIO, priority)
