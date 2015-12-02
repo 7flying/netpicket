@@ -54,8 +54,9 @@ def dashboard(section):
     """Shows the app's dashboard. """
     if section == 'timeline':
         now = datetime.datetime.now()
-        user_events = models.get_user_events(current_user.id,
-                                             now.strftime(const.STRTIME_DATE))
+        user_events = {}
+        user_events[now.strftime(const.STRTIME_DATE)]= models.get_user_events(
+            current_user.id, now.strftime(const.STRTIME_DATE))
         return render_template('dashboard.html', section=section,
                                events=user_events)
     else:
@@ -112,7 +113,7 @@ def timeline_event_stream(user_id):
                                 'priority': const.PRIORITY_COLOUR[
                                     random.randint(0, 3)],
                                 'text': text}
-        if mess:
+        if mess and mess.get('data') != 1L and mess.get('data').get('text') != None:
             # Store on the db, and send it to the client
             models.save_event(user_id, mess['data']['text'],
                               mess['data']['date'], mess['data']['day'],
