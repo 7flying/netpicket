@@ -1,80 +1,78 @@
-<!doctype html>
 {% extends "base.html" %}
 {% block nexttoicon %}Netpicket{% endblock %}
 
 {% block page_content %}
-
-<div class="row">
-  <br>
-  <!-- menu -->
-  <div class="col-md-3 col-sm-3 col-xs-12">
-    <div class="panel panel-default">
-	  <div class="panel-heading"><strong>Menu</strong></div>
-	  <!-- List group -->
-	  <div class="list-group">
-        <a type="button"
-           {% if section == 'timeline' %}
-           class="list-group-item btn-link active"
-           {% else %}
-           class="list-group-item btn-link"
-           {% endif %}
-           role="button"
-           href="{{url_for('dashboard', section='timeline')}}">
-          Timeline
-          <span class="badge"><i class="fa fa-home"></i></span>
-        </a>
-        <a type="button"
-           {% if section == 'networks' %}
-           class="list-group-item btn-link active"
-           {% else %}
-           class="list-group-item btn-link"
-           {% endif %}
-           role="button"
-           href="{{url_for('dashboard', section='networks')}}">
-          My networks
-          <span class="badge">2</span>
-        </a>
-        <a type="button"
-           {% if section == 'alerts' %}
-           class="list-group-item btn-link active"
-           {% else %}
-           class="list-group-item btn-link"
-           {% endif %}
-           role="button"
-           href="{{url_for('dashboard', section='alerts')}}">
-          Alerts
-          <span class="badge">2</span>
-        </a>
-        <a type="button"
-           {% if section == 'wblists' %}
-           class="list-group-item btn-link active"
-           {% else %}
-           class="list-group-item btn-link"
-           {% endif %}
-           role="button"
-           href="{{url_for('dashboard', section='wblists')}}">
-          White/Black lists
-          <span class="badge">2</span>
-        </a>
-	  </div>
-    </div>
-  </div><!-- end menu -->
+<div class="container">
+  <ul class="nav nav-tabs">
+    <li role="presentation"
+        {% if section == 'timeline' %}
+        class="active"
+        {% endif %}
+        >
+      <a href="{{url_for('dashboard', section='timeline')}}">
+        <span><i class="fa fa-clock-o"></i></span> Timeline</a>
+    </li>
+    <li role="presentation"
+        {% if section == 'alerts' %}
+        class="active"
+        {% endif %}
+        >
+      <a href="{{url_for('dashboard', section='alerts')}}">
+        <span><i class="fa fa-exclamation-circle"></i></span>
+        Alerts</a>
+    </li>
+    <li role="presentation"
+        {% if section == 'networks' %}
+        class="active"
+        {% endif %}
+        >
+      <a href="{{url_for('dashboard', section='networks')}}">
+        <span><i class="fa fa-wifi"></i></span> My networks
+      </a>
+    </li>
+    <li role="presentation"
+        {% if section == 'wblists' %}
+        class="active"
+        {% endif %}
+        >
+      <a href="{{url_for('dashboard', section='wblists')}}">
+        <span><i class="fa fa-file"></i></span> White/Black lists
+      </a>
+    </li>
+    <li role="presentation"
+        {% if section == 'scans' %}
+        class="active"
+        {% endif %}
+        >
+      <a href="{{url_for('dashboard', section='scans')}}">
+        <span><i class="fa fa-flash"></i></span> Scans
+      </a>
+    </li>
+    <li role="presentation"
+        {% if section == 'stats' %}
+        class="active"
+        {% endif %}
+        >
+      <a href="{{url_for('dashboard', section='stats')}}">
+        <span><i class="fa fa-bar-chart"></i></span> Stats
+      </a>
+    </li>
+  </ul>
+  <!-- end menu -->
 
   
-  <div class="col-md-9 col-sm-9 col-xs-12">
+  <div class="col-md-12 col-sm-12 col-xs-12">
     {% if section == 'timeline' %}
     <!-- TIMELINE -->
-    <h4>
-      <small>
-        <strong>UPDATED AT: </strong>
+    <h4><small><strong>UPDATED AT: </strong>
         {% if events.keys()|length > 0 %}
         <strong id="updated-ago">{{events[events.keys()[0]][0]['day']
           ~ ' ' ~ events[events.keys()[0]][0]['time']}}</strong>
         {% else %}
         <strong id="updated-ago">...</strong>
         {% endif %}
-      </small>
-    </h4>
+    </small></h4>
+
     <br>
     <dl class="dl-horizontal" id="timeline-updates">
       {% if events.keys()|length > 0 %}
@@ -106,79 +104,76 @@
       {% endif %}
     </dl>
     <!-- END TIMELINE -->
-    {% else %}
-    {% if section == 'networks' %}
-    <div class="row">
-      <div class="col-md-6">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <span><i class="fa fa-wifi"></i></span>
-            <strong>Network name</strong>
+    {% elif section == 'networks' %}
+    <br>
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span><i class="fa fa-wifi"></i></span>
+          <strong>Network name</strong>
+        </div>
+        <div class="panel-body">
+          <h5><strong>General</strong></h5>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Interface</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Hardware Address</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Speed</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Security</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <hr>
+          <h5><strong>Buoy IPv4 info</strong></h5>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Address</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Subnet Mask</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Default Route</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Primary DNS</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Secondary DNS</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <div class="pull-right">
+            <button class="btn btn-default"
+                    type="button">
+              <span class="glyphicon glyphicon-repeat"></span> Rescan
+            </button>
           </div>
-          <div class="panel-body">
-            <h5><strong>General</strong></h5>
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td>Interface</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Hardware Address</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Speed</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Security</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-            <hr>
-            <h5><strong>Buoy IPv4 info</strong></h5>
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td>Address</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Subnet Mask</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Default Route</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Primary DNS</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Secondary DNS</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="panel-footer">
-            <div class="pull-right">
-              <button class="btn btn-default"
-                      type="button">
-                <span class="glyphicon glyphicon-repeat"></span> Rescan
-              </button>
-            </div>
-            <div class="clearfix"></div>
-          </div>
+          <div class="clearfix"></div>
         </div>
       </div>
-
-      {% else %}
-      {% if section == 'alerts' %}
+      {% elif section == 'alerts' %}
       <div class="col-md-12">
+        <br>
         <div class="panel panel-danger">
           <div class="panel-heading"><i class="fa fa-warning"></i>
             <strong>Unknown host detected</strong>
@@ -227,8 +222,8 @@
         </div>
       </div>
     </div>
-    {% else %}
-    {% if section == 'wblists' %}
+    {% elif section == 'wblists' %}
+    <br>
     <div class="col-md-12">
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -273,11 +268,9 @@
         </div>
       </div>
     </div>
-    {% endif %}
-    {% endif %}
-    {% endif %}
+    {% elif section == 'scans' %}
+    {% elif section == 'stats' %}
     {% endif %}
   </div>
 </div>
-
 {% endblock %}
