@@ -81,13 +81,15 @@ def _get_key_event():
 def save_event(user_id, event_desc, date, day, time, priority):
     """Saves an alert."""
     key = _get_key_event()
-    red.lpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
-    red.hset(_ATTR_EVENT_DESC, _KEY_EVENT_USER.format(key, user_id), event_desc)
-    red.hset(_ATTR_EVENT_DATE, _KEY_EVENT_USER.format(key, user_id), date)
-    red.hset(_ATTR_EVENT_DAY, _KEY_EVENT_USER.format(key, user_id), day)
-    red.hset(_ATTR_EVENT_TIME, _KEY_EVENT_USER.format(key, user_id), time)
-    red.hset(_ATTR_EVENT_TIME, _KEY_EVENT_USER.format(key, user_id),
-             priority)
+    print "save event key:", _KEY_EVENT_USER.format(key, user_id)
+    pipe = red.pipeline()
+    pipe.lpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
+    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DESC, event_desc)
+    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DATE, date)
+    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DAY, day)
+    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_TIME, time)
+    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_PRIO, priority)
+    pipe.execute()
 
 def get_event(event_id, user_id):
     """Retrieves an event."""
@@ -101,5 +103,4 @@ def get_user_events(user_id, day):
         tmp = get_event(event, user_id)
         if tmp is not None:
             ret_events.append(tmp)
-    print "user events:", ret_events
     return ret_events
