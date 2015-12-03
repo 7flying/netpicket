@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import redis, gevent
-
+import redis, sys
+if 'threading' in sys.modules:
+    del sys.modules['threading']
+import gevent
 from gevent import monkey
 monkey.patch_all()
 
