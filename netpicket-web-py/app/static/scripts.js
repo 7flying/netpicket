@@ -71,12 +71,8 @@ function timelineSSE() {
                 var dl = document.getElementById("timeline-updates");
                 dl.innerHTML = tableini + dl.innerHTML;
             }
-            document.getElementById("updated-ago").innerHTML = data.time;
-            // save value
-            /*saveTimelineEventStorage(data.date,
-                                     document.getElementById(data.date).outerHTML, // dt
-                                     document.getElementById(data.date + "-dd").outerHTML); // dd
-                                     */
+            document.getElementById("updated-ago").innerHTML = (data.date + " "
+                                                                + data.time);
         }
     }
 }
@@ -87,4 +83,5 @@ $(document).ready(function() {
         if (document.getElementById('updated-ago') != null)
             timelineSSE();
     }
+    $("[rel='tooltip']").tooltip();
 });

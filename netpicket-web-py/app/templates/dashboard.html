@@ -9,7 +9,9 @@
         class="active"
         {% endif %}
         >
-      <a href="{{url_for('dashboard', section='timeline')}}">
+      <a href="{{url_for('dashboard', section='timeline')}}"
+         rel="tooltip" title="The latest events of your networks"
+         data-placement="bottom">
         <span><i class="fa fa-clock-o"></i></span> Timeline</a>
     </li>
     <li role="presentation"
@@ -17,7 +19,9 @@
         class="active"
         {% endif %}
         >
-      <a href="{{url_for('dashboard', section='alerts')}}">
+      <a href="{{url_for('dashboard', section='alerts')}}"
+         rel="tooltip" title="Detailed info of your timeline events"
+         data-placement="bottom">
         <span><i class="fa fa-exclamation-circle"></i></span>
         Alerts</a>
     </li>
@@ -26,7 +30,9 @@
         class="active"
         {% endif %}
         >
-      <a href="{{url_for('dashboard', section='networks')}}">
+      <a href="{{url_for('dashboard', section='networks')}}"
+         rel="tooltip" title="Handle your networks"
+         data-placement="bottom">
         <span><i class="fa fa-wifi"></i></span> My networks
       </a>
     </li>
@@ -35,7 +41,9 @@
         class="active"
         {% endif %}
         >
-      <a href="{{url_for('dashboard', section='wblists')}}">
+      <a href="{{url_for('dashboard', section='wblists')}}"
+         rel="tooltip" title="Manage access control lists"
+         data-placement="bottom">
         <span><i class="fa fa-file"></i></span> White/Black lists
       </a>
     </li>
@@ -44,7 +52,9 @@
         class="active"
         {% endif %}
         >
-      <a href="{{url_for('dashboard', section='scans')}}">
+      <a href="{{url_for('dashboard', section='scans')}}"
+         data-placement="bottom" rel="tooltip"
+         title="Schedule network scans">
         <span><i class="fa fa-flash"></i></span> Scans
       </a>
     </li>
@@ -53,7 +63,9 @@
         class="active"
         {% endif %}
         >
-      <a href="{{url_for('dashboard', section='stats')}}">
+      <a href="{{url_for('dashboard', section='stats')}}"
+         data-placement="bottom" rel="tooltip"
+         title="Statistics!">
         <span><i class="fa fa-bar-chart"></i></span> Stats
       </a>
     </li>
@@ -95,6 +107,7 @@
                 {% endif %}
                 {{even['desc']}}
               </td>
+              <td>{{even['netname']}}</td>
             </tr>
             {% endfor %}
             {% endfor %}
