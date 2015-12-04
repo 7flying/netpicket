@@ -102,7 +102,7 @@ def timeline_event_stream(user_id):
     pubsub.subscribe('timeline')
     while True:
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
-        # 'priority': 1, 'text': 'Hello'}
+        # 'priority': 1, 'text': 'Hello', 'net' : 1}
         mess = pubsub.get_message()
         if config.RANDOM_TIMELINE:
             if random.randint(0, 1) == 0:
@@ -114,12 +114,13 @@ def timeline_event_stream(user_id):
                                 'day': now.strftime(const.STRTIME_DAY),
                                 'priority': const.PRIORITY_COLOUR[
                                     random.randint(0, 3)],
-                                'text': text}
+                                'text': text, 'netid': '1'}
         if mess and mess.get('data') != 1L and mess.get('data').get('text') != None:
             # Store on the db, and send it to the client
-            models.save_event(user_id, mess['data']['text'],
-                              mess['data']['date'], mess['data']['day'],
-                              mess['data']['time'], mess['data']['priority'])
+            models.save_event(user_id, mess['data']['netid'],
+                              mess['data']['text'], mess['data']['date'],
+                              mess['data']['day'], mess['data']['time'],
+                              mess['data']['priority'])
             yield 'data: ' + json.dumps(mess.get('data')) + '\n\n'
         gevent.sleep(5)
 

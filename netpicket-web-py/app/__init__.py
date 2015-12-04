@@ -35,4 +35,4 @@ login_manager.init_app(app)
 
 mail = Mail(app)
 
-import views, errorviews, email, auth
+import views, errorviews, email, auth, models, const
