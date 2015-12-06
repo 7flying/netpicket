@@ -25,7 +25,7 @@ def generate_mockup_data(networks=2, days=3, events_day=10):
                 then = now - datetime.timedelta(days=day)
                 for _ in itertools.repeat(None, events_day):
                     for network in models.get_user_networks(user.id):
-                        models.save_event(user.id, network, 'Event ' + str(day),
+                        models.save_event(user.id, network, 'Event ' + str(random.randint(1, 100)),
                                           then.strftime(const.STRTIME_DATE),
                                           then.strftime(const.STRTIME_DAY),
                                           then.strftime(const.STRTIME_TIME),

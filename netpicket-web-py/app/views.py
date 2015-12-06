@@ -55,12 +55,14 @@ def dashboard(section):
     if section == 'timeline':
         now = datetime.datetime.now()
         user_events = {}
-        tempevents = models.get_user_events(current_user.id,
-                                            now.strftime(const.STRTIME_DATE))
-        if len(tempevents) > 0:
-            user_events[now.strftime(const.STRTIME_DATE)] = tempevents
+        for i in range(const.TIMELINE_DAYS):
+            date = now - datetime.timedelta(days=i)
+            tempevents = models.get_user_events_date(current_user.id,
+                                                     date.strftime(const.STRTIME_DATE))
+            if len(tempevents) > 0:
+                user_events[date.strftime(const.STRTIME_DATE)] = tempevents
         return render_template('dashboard.html', section=section,
-                               events=user_events)
+                               events=user_events, lastkey=now.strftime(const.STRTIME_DATE))
     else:
         return render_template('dashboard.html', section=section,
                                events=None)
@@ -98,6 +100,7 @@ def before_request():
 
 def timeline_event_stream(user_id):
     """Handles timeline event notifications."""
+    print " [INFO] timeline get event stream"
     pubsub = red.pubsub()
     pubsub.subscribe('timeline')
     while True:
@@ -128,4 +131,5 @@ def timeline_event_stream(user_id):
 @login_required
 def timeline():
     """Subscribe/receive timeline events."""
+    print " [INFO] timeline"
     return Response(timeline_event_stream(current_user.id), mimetype='text/event-stream')

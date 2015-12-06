@@ -78,8 +78,8 @@
     <!-- TIMELINE -->
     <h4><small><strong>UPDATED AT: </strong>
         {% if events.keys()|length > 0 %}
-        <strong id="updated-ago">{{events[events.keys()[0]][0]['day']
-          ~ ' ' ~ events[events.keys()[0]][0]['time']}}</strong>
+        <strong id="updated-ago">{{events[lastkey][0]['day']
+          ~ ' ' ~ events[lastkey][0]['time']}}</strong>
         {% else %}
         <strong id="updated-ago">...</strong>
         {% endif %}
@@ -88,7 +88,7 @@
     <br>
     <dl class="dl-horizontal" id="timeline-updates">
       {% if events.keys()|length > 0 %}
-      {% for date in events.keys() %}
+      {% for date in events.keys()|sort(reverse=True) %}
       <dt id="{{date}}">{{events[date][0]['day']}}</dt>
       <dd id="{{date ~ '-dd'}}">
         <table class="table">

@@ -80,8 +80,8 @@ function timelineSSE() {
 
 $(document).ready(function() {
     if (window.location.href.indexOf('dashboard') > -1) {
-        if (document.getElementById('updated-ago') != null)
-            timelineSSE();
+       // if (document.getElementById('updated-ago') != null)
+       //     timelineSSE();
     }
     $("[rel='tooltip']").tooltip();
 });

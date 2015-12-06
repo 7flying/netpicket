@@ -117,7 +117,7 @@ _ATTR_EVENT_TIME = 'time' #6:12
 _ATTR_EVENT_PRIO = 'priority'
 _ATTR_EVENT_NET = 'netid'
 
-_KEY_EVENTS_USER_DAY = 'event-user-day:user:{0}:day:{1}'
+_KEY_EVENTS_USER_DATE = 'event-user-day:user:{0}:day:{1}'
 _KEY_EVENTS_USER_NET = 'event-user-network:user{0}:network:{1}'
 
 def _get_key_event():
@@ -128,7 +128,7 @@ def save_event(user_id, net_id, event_desc, date, day, time, priority):
     """Saves an event."""
     key = _get_key_event()
     pipe = red.pipeline()
-    pipe.lpush(_KEY_EVENTS_USER_DAY.format(user_id, date), key)
+    pipe.lpush(_KEY_EVENTS_USER_DATE.format(user_id, date), key)
     pipe.lpush(_KEY_EVENTS_USER_NET.format(user_id, net_id), key)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DESC, event_desc)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_NET, net_id)
@@ -153,12 +153,13 @@ def get_user_events(user_id):
     ret = []
     for net in nets:
         ret.extend(get_user_events_network(user_id, net))
+    print ret
     return ret
 
-def get_user_events_day(user_id, day):
-    """Returns all the events for the user for the given day."""
+def get_user_events_date(user_id, date):
+    """Returns all the events for the user for the given date."""
     user_id = str(user_id)
-    events = red.lrange(_KEY_EVENTS_USER_DAY.format(user_id, day), 0, -1)
+    events = red.lrange(_KEY_EVENTS_USER_DATE.format(user_id, date), 0, -1)
     ret_events = []
     for event_id in events:
         tmp = get_event(event_id, user_id)
@@ -183,7 +184,7 @@ def get_user_events_day_network(user_id, network_id, day):
     user_id = str(user_id)
     network_id = str(network_id)
     evnet = red.lrange(_KEY_EVENTS_USER_NET.format(user_id, network_id), 0, -1)
-    evnday = red.lrange(_KEY_EVENTS_USER_DAY.format(user_id, day), 0, -1)
+    evnday = red.lrange(_KEY_EVENTS_USER_DATE.format(user_id, day), 0, -1)
     interset = set(evnet) & set(evnday)
     ret = []
     for evnid in interset:
