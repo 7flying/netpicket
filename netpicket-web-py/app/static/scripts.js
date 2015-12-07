@@ -77,11 +77,25 @@ function timelineSSE() {
     }
 }
 
-
 $(document).ready(function() {
     if (window.location.href.indexOf('dashboard') > -1) {
-       // if (document.getElementById('updated-ago') != null)
-       //     timelineSSE();
+        // if (document.getElementById('updated-ago') != null)
+        //     timelineSSE();
+    }
+    
+    $('#button-add-net').on('click', function() {
+        if ($('#icon-collapse-pa').hasClass('fa-plus-square')) {
+            $('#icon-collapse-pa').removeClass(
+                "fa-plus-square").addClass("fa-minus-square");
+        } else {
+            if($('#icon-collapse-pa').hasClass('fa-minus-square')) {
+                $('#icon-collapse-pa').removeClass(
+                    "fa-minus-square").addClass("fa-plus-square");
+            }
+        } 
+    });
+    if (document.getElementById('neterrors') != null) {
+        $("#button-add-net").click();
     }
     $("[rel='tooltip']").tooltip();
 });

@@ -8,11 +8,12 @@ import const, config
 
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
-from flask import render_template, redirect, url_for, g, json, Response, abort
+from flask import render_template, redirect, request, url_for, g, json,\
+     Response, abort, flash
 
-from app.auth import OAuthSignIn
 from app import app, db, red, login_manager
-from forms import AddNetworkForm
+from app.auth import OAuthSignIn
+from app.forms import AddNetworkForm
 import app.models as models
 
 
@@ -49,17 +50,8 @@ def callback(provider):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-@app.route('/addnet', methods=['POST'])
-@login_required
-def add_network():
-    form = AddNetworkForm(prefix='add-net-f')
-    if form.validate_on_submit():
-        # TODO
-        pass
-    return redirect(url_for('dashboard', section=const.SEC_NETWORKS))
-
-@app.route('/dashboard/', defaults={'section': 'timeline'})
-@app.route('/dashboard/<section>')
+@app.route('/dashboard/', defaults={'section': 'timeline'}, methods=['GET', 'POST'])
+@app.route('/dashboard/<section>', methods=['GET', 'POST'])
 @login_required
 def dashboard(section):
     """Shows the app's dashboard. """
@@ -89,11 +81,29 @@ def dashboard(section):
         pass
     else:
         return abort(404)
-    return render_template('dashboard.html', section=section, events=events,
-                           lastkey=lastkey, alerts=alerts, nets=networks,
-                           acls=acls, scans=scans, stats=stats,
-                           faddnet=AddNetworkForm(prefix='add-net-f'))
-
+    if request.method == 'GET':
+        return render_template('dashboard.html', section=section, events=events,
+                               lastkey=lastkey, alerts=alerts, nets=networks,
+                               acls=acls, scans=scans, stats=stats,
+                               faddnet=AddNetworkForm(prefix='add-net-f'))
+    else:
+        faddnet = AddNetworkForm(prefix='add-net-f')
+        neterrors = False
+        if section == const.SEC_NETWORKS:
+            if faddnet.validate_on_submit():
+                nname = faddnet.name.data
+                ipaddress = faddnet.ipaddress.data
+                models.set_network(current_user.id, nname, '', '', '', '',
+                                   ipaddress, '', '', '')
+                flash('Network successfully added.', const.ALERT_SUCCESS)
+                networks = models.get_user_networks(current_user.id)
+            else:
+                neterrors = True
+        return render_template('dashboard.html', section=section,
+                               events=events, lastkey=lastkey,
+                               alerts=alerts, nets=networks, acls=acls,
+                               scans=scans, stats=stats,
+                               faddnet=faddnet, neterrors=neterrors)
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():
