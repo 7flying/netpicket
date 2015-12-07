@@ -8,11 +8,13 @@ import const, config
 
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
-from flask import render_template, redirect, url_for, g, json, Response
+from flask import render_template, redirect, url_for, g, json, Response, abort
 
 from app.auth import OAuthSignIn
 from app import app, db, red, login_manager
+from forms import AddNetworkForm
 import app.models as models
+
 
 @app.route('/')
 def main_page():
@@ -47,25 +49,50 @@ def callback(provider):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
+@app.route('/addnet', methods=['POST'])
+@login_required
+def add_network():
+    form = AddNetworkForm(prefix='add-net-f')
+    if form.validate_on_submit():
+        # TODO
+        pass
+    return redirect(url_for('dashboard', section=const.SEC_NETWORKS))
+
 @app.route('/dashboard/', defaults={'section': 'timeline'})
 @app.route('/dashboard/<section>')
 @login_required
 def dashboard(section):
     """Shows the app's dashboard. """
-    if section == 'timeline':
+    events, lastkey, alerts, networks, acls, scans, stats = (None,) * 7
+    if section == const.SEC_TIMELINE:
         now = datetime.datetime.now()
-        user_events = {}
+        events = {}
         for i in range(const.TIMELINE_DAYS):
             date = now - datetime.timedelta(days=i)
             tempevents = models.get_user_events_date(current_user.id,
-                                                     date.strftime(const.STRTIME_DATE))
+                                                     date.strftime(
+                                                         const.STRTIME_DATE))
             if len(tempevents) > 0:
-                user_events[date.strftime(const.STRTIME_DATE)] = tempevents
-        return render_template('dashboard.html', section=section,
-                               events=user_events, lastkey=now.strftime(const.STRTIME_DATE))
+                events[date.strftime(const.STRTIME_DATE)] = tempevents
+        lastkey = now.strftime(const.STRTIME_DATE)
+    elif section == const.SEC_ALERTS:
+        pass
+    elif section == const.SEC_NETWORKS:
+        networks = models.get_user_networks(current_user.id)
+    elif section == const.SEC_ACLS:
+        acls = {}
+        acls['W'] = models.get_entries('W', current_user.id)
+        acls['B'] = models.get_entries('B', current_user.id)
+    elif section == const.SEC_SCANS:
+        pass
+    elif section == const.SEC_STATS:
+        pass
     else:
-        return render_template('dashboard.html', section=section,
-                               events=None)
+        return abort(404)
+    return render_template('dashboard.html', section=section, events=events,
+                           lastkey=lastkey, alerts=alerts, nets=networks,
+                           acls=acls, scans=scans, stats=stats,
+                           faddnet=AddNetworkForm(prefix='add-net-f'))
 
 @app.route('/profile', methods=['GET'])
 @login_required

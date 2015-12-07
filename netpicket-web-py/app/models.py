@@ -92,6 +92,7 @@ def get_network(network_id):
     """Retrieves a network."""
     tmp = red.hgetall(_KEY_NET.format(str(network_id)))
     if tmp is not None:
+        print 'network', tmp
         tmp['id'] = network_id
     return tmp
 
@@ -144,6 +145,9 @@ def get_event(event_id, user_id):
     temp = red.hgetall(_KEY_EVENT_USER.format(str(event_id), str(user_id)))
     if temp != None:
         temp['id'] = event_id
+        net = get_network(temp[_ATTR_EVENT_NET])
+        if net is not None:
+            temp['net'] = (net['id'], net[_ATTR_NET_NAME])
     return temp
 
 def get_user_events(user_id):
@@ -153,7 +157,6 @@ def get_user_events(user_id):
     ret = []
     for net in nets:
         ret.extend(get_user_events_network(user_id, net))
-    print ret
     return ret
 
 def get_user_events_date(user_id, date):
@@ -191,4 +194,71 @@ def get_user_events_day_network(user_id, network_id, day):
         tmp = get_event(evnid, user_id)
         if tmp is not None:
             ret.append(tmp)
+    return ret
+
+# --- W/B lists' entries --- #
+# WB lists' entries are stored in hashes, which hold the entry's main properties.
+# The entry id must be generated using _get_key_entry().
+# Each entry has an associated network id list,
+# Each user has two lists that hold the ids of  black list and white list entries.
+_KEY_ENTRY_ID = 'list-entry-i-auto:'
+_KEY_ENTRY_USER = 'entry:{0}:user:{1}'
+_ATTR_ENTRY_TYPE = 'type'
+_ATTR_ENTRY_HOST = 'host'
+_ATTR_ENTRY_MAC = 'mac'
+_ATTR_ENTRY_ADDR = 'address'
+
+_KEY_ENTRY_LIST_NETS = 'entry:{0}:list-nets'
+_KEY_ENTRY_BLACK_USER = 'black:user:{0}'
+_KEY_ENTRY_WHITE_USER = 'white:user:{0}'
+
+def _get_key_entry():
+    """Returns a str with the next entry key."""
+    return str(red.incr(_KEY_ENTRY_ID))
+
+def save_entry(user_id, typ, host, mac, addr, nets):
+    """Saves and entry."""
+    # TODO: check mac not repeated
+    if typ in ['B', 'W']:
+        key = _get_key_entry()
+        pipe = red.pipeline()
+        if typ == 'B':
+            pipe.rpush(_KEY_ENTRY_BLACK_USER.format(user_id), key)
+        else:
+            pipe.rpush(_KEY_ENTRY_WHITE_USER.format(user_id), key)
+        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_TYPE, typ)
+        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_HOST, host)
+        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_MAC, mac)
+        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_ADDR, addr)
+        for net in nets:
+            pipe.rpush(_KEY_ENTRY_LIST_NETS.format(key), str(net))
+        pipe.execute()
+
+def get_entry(user_id, entry_id):
+    """Gets an entry."""
+    temp = red.hgetall(_KEY_ENTRY_USER.format(entry_id, user_id))
+    if temp is not None:
+        temp['id'] = entry_id
+        nets = red.lrange(_KEY_ENTRY_LIST_NETS.format(entry_id), 0, -1)
+        tempnets = []
+        if nets is not None:
+            for net in nets:
+                tempnet = get_network(net)
+                tempnets.append((net, tempnet['name']))
+        temp['nets'] = tempnets
+    return temp
+
+def get_entries(typ, user_id):
+    """Gets all the entries of the specific type (B, W) for the given user."""
+    ents = None
+    ret = []
+    if typ == 'B':
+        ents = red.lrange(_KEY_ENTRY_BLACK_USER.format(user_id), 0, -1)
+    elif typ == 'W':
+        ents = red.lrange(_KEY_ENTRY_WHITE_USER.format(user_id), 0, -1)
+    if ents is not None:
+        for ent in ents:
+            tmp = get_entry(user_id, ent)
+            if tmp is not None:
+                ret.append(tmp)
     return ret
