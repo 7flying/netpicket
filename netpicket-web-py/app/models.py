@@ -74,7 +74,7 @@ def set_network(user, name, iface, haddress, speed, sec, address, submask,
     """Saves a network."""
     key = _get_key_net()
     pip = red.pipeline()
-    pip.rpush(_KEY_NETS_USER.format(user), key)
+    pip.rpush(_KEY_NETS_USER.format(str(user)), key)
     pip.hset(_KEY_NET.format(key), _ATTR_NET_NAME, name)
     pip.hset(_KEY_NET.format(key), _ATTR_NET_IFACE, iface)
     pip.hset(_KEY_NET.format(key), _ATTR_NET_HADDR, haddress)
@@ -92,7 +92,6 @@ def get_network(network_id):
     """Retrieves a network."""
     tmp = red.hgetall(_KEY_NET.format(str(network_id)))
     if tmp is not None:
-        print 'network', tmp
         tmp['id'] = network_id
     return tmp
 

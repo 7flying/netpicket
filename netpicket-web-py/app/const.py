@@ -25,3 +25,10 @@ SEC_NETWORKS = 'networks'
 SEC_ACLS = 'wblists'
 SEC_SCANS = 'scans'
 SEC_STATS = 'stats'
+
+
+# Template alert categories
+ALERT_SUCCESS = 'alert alert-success'
+ALERT_ERROR = 'alert alert-danger'
+ALERT_WARNING = 'alert alert-warning'
+ALERT_INFO = 'alert alert-info'
