@@ -32,10 +32,9 @@
     </div>
     <div class="collapse navbar-collapse" id="my-super-collapse">
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="">About <span class="fa fa-question fa-lg"></span></a></li>
+        <li><a href="">About</a></li>
         {% if current_user.is_authenticated() %}
-        <li><a href="{{ url_for('logout')}}">Logout
-            <span class="fa fa-power-off"></span></a>
+        <li><a href="{{ url_for('logout')}}">Logout</a>
         </li>
         {% endif %}
       </ul>
@@ -87,19 +86,8 @@
 {% block scripts %}
 {{ super() }}
 <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700' rel='stylesheet' type='text/css'>
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<!-- Optional theme -->
-<link rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
 <!-- Font awesome -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-
 <!-- Our stuff -->
 <link rel="stylesheet"
       href="{{url_for('.static', filename='style.css')}}">

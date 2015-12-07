@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block nexttoicon %}Netpicket{% endblock %}
+{% block nexttoicon %}<strong>Netpicket</strong> - <small>{{current_user.email}}</small>{% endblock %}
 
 {% block page_content %}
 <div class="container">
@@ -107,23 +107,71 @@
                 {% endif %}
                 {{even['desc']}}
               </td>
-              <td>{{even['netname']}}</td>
+              <td><a href="{{url_for('dashboard',
+                           section='networks')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
             </tr>
-            {% endfor %}
             {% endfor %}
           <tbody>
         </table>
       </dd>
+      {% endfor %}
       {% endif %}
     </dl>
     <!-- END TIMELINE -->
     {% elif section == 'networks' %}
     <br>
+    <div class="col-md-12">
+      <button type="button" class="btn btn-default" data-toggle="modal"
+              data-target="#modal-add-net">
+        <span class="fa fa-plus-circle" aria-hidden="true"></span> Add
+      </button>
+    </div>
+    <!-- modal add net-->
+    <div class="modal fade" id="modal-add-net" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"
+                    aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel"><i class="fa fa-wifi"></i>
+              Add network
+            </h4>
+          </div>
+          <form name="faddnet" method="post" action="{{url_for('add_network')}}">
+            <div class="modal-body">
+              <label for="add-net-f-name">Network name</label>
+              {{faddnet.name(class_="form-control")}}
+              <label for="add-net-f-ipaddress">Buoy's IP address</label>
+              {{faddnet.ipaddress(class_="form-control")}}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default"
+                      data-dismiss="modal">Close</button>
+              {{faddnet.submit(class_="btn btn-primary")}}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- end modal add net-->
+    {% if nets|length == 0 %}
+    <div class="alert alert-info" role="alert">
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      <span class="sr-only">Hey! You don't have networks</span><strong>Hey!</strong>
+      You don't have networks, please add one.
+    </div>
+    {% else %}
+    <hr>
+    <div class="col-md-12">
+      <h4>My networks</h4>
+    </div>
+    {% for net in nets %}
     <div class="col-md-6">
-      <div class="panel panel-default">
+      <div class="panel panel-default" id={{'net-'~net['id']}}>
         <div class="panel-heading">
           <span><i class="fa fa-wifi"></i></span>
-          <strong>Network name</strong>
+          <strong>{{net['name']}}</strong>
         </div>
         <div class="panel-body">
           <h5><strong>General</strong></h5>
@@ -131,19 +179,19 @@
             <tbody>
               <tr>
                 <td>Interface</td>
-                <td></td>
+                <td>{{net['interface']}}</td>
               </tr>
               <tr>
                 <td>Hardware Address</td>
-                <td></td>
+                <td>{{net['hard-address']}}</td>
               </tr>
               <tr>
                 <td>Speed</td>
-                <td></td>
+                <td>{{net['speed']}}</td>
               </tr>
               <tr>
                 <td>Security</td>
-                <td></td>
+                <td>{{net['security']}}</td>
               </tr>
             </tbody>
           </table>
@@ -153,23 +201,25 @@
             <tbody>
               <tr>
                 <td>Address</td>
-                <td></td>
+                <td>{{net['address']}}</td>
               </tr>
               <tr>
                 <td>Subnet Mask</td>
-                <td></td>
+                <td>{{net['subnet-mask']}}</td>
               </tr>
               <tr>
                 <td>Default Route</td>
-                <td></td>
+                <td>{{net['default-route']}}</td>
               </tr>
               <tr>
                 <td>Primary DNS</td>
-                <td></td>
+                <td>{{net['dns-1']}}</td>
               </tr>
               <tr>
                 <td>Secondary DNS</td>
-                <td></td>
+                {% if net['dns-2']|length == 0 %}
+                <td>-</td>
+                {% else %}<td>{{net['dns-2']}}</td>{% endif %}
               </tr>
             </tbody>
           </table>
@@ -178,112 +228,179 @@
           <div class="pull-right">
             <button class="btn btn-default"
                     type="button">
+              <span class="glyphicon glyphicon-remove"></span> Remove
+            </button>
+            <button class="btn btn-default"
+                    type="button">
               <span class="glyphicon glyphicon-repeat"></span> Rescan
             </button>
           </div>
           <div class="clearfix"></div>
         </div>
       </div>
-      {% elif section == 'alerts' %}
-      <div class="col-md-12">
-        <br>
-        <div class="panel panel-danger">
-          <div class="panel-heading"><i class="fa fa-warning"></i>
-            <strong>Unknown host detected</strong>
-          </div>
-          <div class="panel-body">
-            <div class="col-md-6">
-              <div class="table-responsive">
-                <table class="table">
-                  <tbody>
-                    <tr><td><strong>Hostname</strong></td><td>H4x0r</td></tr>
-                    <tr><td><strong>IP</strong></td><td>192.168.1.25</td></tr>
-                    <tr><td><strong>MAC</strong></td><td>00:0a:95:9d:68:16</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="col-md-6">
-              
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12">
-        <div class="panel panel-warning">
-          <div class="panel-heading"><i class="fa fa-exclamation-circle"></i>
-            <strong>Vulnerable host</strong>
-          </div>
-          <div class="panel-body">
-            <div class="col-md-6">
-              <div class="table-responsive">
-                <table class="table">
-                  <tbody>
-                    <tr><td><strong>Hostname</strong></td><td>XPS</td></tr>
-                    <tr><td><strong>IP</strong></td><td>192.168.1.36</td></tr>
-                    <tr><td><strong>MAC</strong></td><td>0b:0a:95:9d:68:14</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <a
-                 href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-100001">
-                CVE-2014-100001</a> Remote code injection.
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-    {% elif section == 'wblists' %}
-    <br>
-    <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <span><i class="fa fa-file-text-o"></i></span>
-          <strong>White list</strong>
-        </div>
-        <div class="panel-body">
-          <div class="table-responsive">
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td><strong>Hostname</strong></td>
-                  <td><strong>MAC</strong></td>
-                  <td><strong>Address</strong></td>
-                  <td><strong>Network</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <span><i class="fa fa-file-text"></i></span>
-          <strong>Black list</strong>
-        </div>
-        <div class="panel-body">
-          <div class="table-responsive">
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td><strong>Hostname</strong></td>
-                  <td><strong>MAC</strong></td>
-                  <td><strong>Address</strong></td>
-                  <td><strong>Network</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% elif section == 'scans' %}
-    {% elif section == 'stats' %}
+    {% endfor %}
     {% endif %}
+    {% elif section == 'alerts' %}
+    <div class="col-md-12">
+      <br>
+      <div class="panel panel-danger">
+        <div class="panel-heading"><i class="fa fa-warning"></i>
+          <strong>Unknown host detected</strong>
+        </div>
+        <div class="panel-body">
+          <div class="col-md-6">
+            <div class="table-responsive">
+              <table class="table">
+                <tbody>
+                  <tr><td><strong>Hostname</strong></td><td>H4x0r</td></tr>
+                  <tr><td><strong>IP</strong></td><td>192.168.1.25</td></tr>
+                  <tr><td><strong>MAC</strong></td><td>00:0a:95:9d:68:16</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6">
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="panel panel-warning">
+        <div class="panel-heading"><i class="fa fa-exclamation-circle"></i>
+          <strong>Vulnerable host</strong>
+        </div>
+        <div class="panel-body">
+          <div class="col-md-6">
+            <div class="table-responsive">
+              <table class="table">
+                <tbody>
+                  <tr><td><strong>Hostname</strong></td><td>XPS</td></tr>
+                  <tr><td><strong>IP</strong></td><td>192.168.1.36</td></tr>
+                  <tr><td><strong>MAC</strong></td><td>0b:0a:95:9d:68:14</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <a
+               href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-100001">
+              CVE-2014-100001</a> Remote code injection.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+  {% elif section == 'wblists' %}
+  <br>
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span><i class="fa fa-file-text-o"></i></span>
+        <strong>White list</strong>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <td><strong>Hostname</strong></td>
+                <td><strong>MAC</strong></td>
+                <td><strong>Address</strong></td>
+                <td><strong>Network/s</strong></td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in acls['W'] %}
+              <tr>
+                <td>{{entry['host']}}</td>
+                <td>{{entry['mac']}}</td>
+                <td>{{entry['address']}}</td>
+                <td><ul class="list-inline">
+                    {% for id, name in entry['nets'] %} 
+                    <li><a href="{{url_for('dashboard',
+                                 section='networks')}}#net-{{id}}">{{name}}</a></li>
+                    {% endfor %}
+                </ul></td>
+                <td><button class="btn btn-default btn-sm" type="button">
+                    <span class="fa fa-edit"></span> Edit
+                  </button> <button class="btn btn-default btn-sm" type="button">
+                    <span class="fa fa-remove"></span> Delete
+                </button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <div class="pull-right">
+          <button class="btn btn-default"
+                  type="button">
+            <span class="fa fa-plus-circle"></span> Add
+          </button>
+        </div>
+        <div class="clearfix"></div>
+      </div><!-- footer -->
+    </div><!-- default -->
+  </div><!-- col-md- 12 -->
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span><i class="fa fa-file-text"></i></span>
+        <strong>Black list</strong>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <td><strong>Hostname</strong></td>
+                <td><strong>MAC</strong></td>
+                <td><strong>Address</strong></td>
+                <td><strong>Network/s</strong></td>
+                <td></td>
+            </thead>
+            <tbody>
+              {% for entry in acls['B'] %}
+              <tr>
+                <td>{{entry['host']}}</td>
+                <td>{{entry['mac']}}</td>
+                <td>{{entry['address']}}</td>
+                <td><ul class="list-inline">
+                    {% for id, name in entry['nets'] %} 
+                    <li><a href="{{url_for('dashboard',
+                                 section='networks')}}#net-{{id}}">{{name}}</a></li>
+                    {% endfor %}
+                </ul></td>
+                <td><button class="btn btn-default btn-sm" type="button">
+                    <span class="fa fa-edit"></span> Edit
+                  </button> <button class="btn btn-default btn-sm" type="button">
+                    <span class="fa fa-remove"></span> Delete
+                </button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <div class="pull-right">
+          <button class="btn btn-default"
+                  type="button">
+            <span class="fa fa-plus-circle"></span> Add
+          </button>
+        </div>
+        <div class="clearfix"></div>
+      </div><!-- footer -->
+    </div><!-- default -->
+  </div><!-- col-md- 12 -->
+
+  {% elif section == 'scans' %}
+  {% elif section == 'stats' %}
+  {% endif %}
+</div>
 </div>
 {% endblock %}
