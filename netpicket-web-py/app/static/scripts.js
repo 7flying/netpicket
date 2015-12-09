@@ -77,23 +77,31 @@ function timelineSSE() {
     }
 }
 
+function changeClassButtonIcon() {
+    if ($('#icon-collapse-pa').hasClass('fa-plus-square')) {
+        $('#icon-collapse-pa').removeClass(
+            "fa-plus-square").addClass("fa-minus-square");
+    } else {
+        if($('#icon-collapse-pa').hasClass('fa-minus-square')) {
+            $('#icon-collapse-pa').removeClass(
+                "fa-minus-square").addClass("fa-plus-square");
+        }
+    }
+}
+
 $(document).ready(function() {
     if (window.location.href.indexOf('dashboard') > -1) {
         // if (document.getElementById('updated-ago') != null)
         //     timelineSSE();
     }
     
-    $('.button-icon-collapse').on('click', function() {
-        if ($('#icon-collapse-pa').hasClass('fa-plus-square')) {
-            $('#icon-collapse-pa').removeClass(
-                "fa-plus-square").addClass("fa-minus-square");
-        } else {
-            if($('#icon-collapse-pa').hasClass('fa-minus-square')) {
-                $('#icon-collapse-pa').removeClass(
-                    "fa-minus-square").addClass("fa-plus-square");
-            }
-        } 
+    $('#button-add-entry').on('click', function() {
+        changeClassButtonIcon(); 
     });
+    $('#button-add-net').on('click', function() {
+        changeClassButtonIcon(); 
+    });
+    
     if (document.getElementById('neterrors') != null) {
         $("#button-add-net").click();
     }

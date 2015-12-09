@@ -217,7 +217,7 @@ def _get_key_entry():
 
 def save_entry(user_id, typ, host, mac, addr, nets):
     """Saves and entry."""
-    # TODO: check mac not repeated
+    # TODO: check mac not repeated for a network
     if typ in ['B', 'W']:
         key = _get_key_entry()
         pipe = red.pipeline()

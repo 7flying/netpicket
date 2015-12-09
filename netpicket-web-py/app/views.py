@@ -88,10 +88,10 @@ def dashboard(section):
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
                                    prefix='add-entry-f').new(current_user.id))
-    else:
+    else: # PUT requests
         faddnet = AddNetworkForm(prefix='add-net-f')
         faddentry = AddCALEntryForm(prefix='add-entry-f').new(current_user.id)
-        neterrors = False
+        neterrors, entryerrors = (False, ) * 2
         if section == const.SEC_NETWORKS:
             if faddnet.validate_on_submit():
                 nname = faddnet.name.data
@@ -102,12 +102,23 @@ def dashboard(section):
                 networks = models.get_user_networks(current_user.id)
             else:
                 neterrors = True
+        elif section == const.SEC_ACLS:
+            mac = faddentry.mac.data
+            networks = faddentry.networks.data
+            list_type = faddentry.type.data
+            print mac
+            print networks
+            print list_type
+            if faddentry.validate_on_submit():
+                print " [INFO] entry form ok"
+            else:
+                entryerrors = True
         return render_template('dashboard.html', section=section,
                                events=events, lastkey=lastkey,
                                alerts=alerts, nets=networks, acls=acls,
                                scans=scans, stats=stats,
                                faddnet=faddnet, neterrors=neterrors,
-                               faddentry=faddentry)
+                               faddentry=faddentry, entryerrors=entryerrors)
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():

@@ -300,7 +300,7 @@
   <br>
   <div class="col-md-12">
     {% if entryerrors %}
-    <div id="neterrors" class="alert alert-danger" role="alert">
+    <div id="entryerrors" class="alert alert-danger" role="alert">
       <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
       <span class="sr-only">Invalid or empty fields on form.</span><strong>Hey!</strong>
       Invalid or empty fields on form.
@@ -321,10 +321,7 @@
       <h4><i class="fa fa-list"></i> Add entry</h4>
       <!-- wtf.quick_form(faddentry)}} -->
       <form class="form" role="form" method="post">
-        <div class="form-group">
-          <label class="control-label" for="add-entry-f-mac">MAC</label>
-          {{faddentry.mac(class_="form-control")}}
-        </div>
+        {{wtf.form_field(faddentry.mac)}}
         <div class="form-group">
           <label class="control-label" for="add-entry-f-networks">
             Select the list type
@@ -344,6 +341,7 @@
   <hr>
   <!-- end  add entry-->
   <div class="col-md-12">
+    <h4>My white &amp; black lists</h4>
     <div class="panel panel-default">
       <div class="panel-heading">
         <span><i class="fa fa-file-text-o"></i></span>
@@ -362,6 +360,9 @@
               </tr>
             </thead>
             <tbody>
+              {% if acls['W']|length == 0 %}
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+              {% else %}
               {% for entry in acls['W'] %}
               <tr>
                 <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
@@ -380,6 +381,7 @@
                 </button></td>
               </tr>
               {% endfor %}
+              {% endif %}
             </tbody>
           </table>
         </div>
@@ -404,6 +406,9 @@
                 <td></td>
             </thead>
             <tbody>
+              {% if acls['W']|length == 0 %}
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+              {% else %}
               {% for entry in acls['B'] %}
               <tr>
                 <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
@@ -422,6 +427,7 @@
                 </button></td>
               </tr>
               {% endfor %}
+              {% endif %}
             </tbody>
           </table>
         </div>

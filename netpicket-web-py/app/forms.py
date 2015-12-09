@@ -18,7 +18,7 @@ class AddNetworkForm(Form):
 def get_network_options(user_id):
     """Returns the available networks for a given user."""
     options = []
-    for network  in models.get_user_networks(user_id):
+    for network in models.get_user_networks(user_id):
         options.append((network['id'], network['name']))
     return options
 
@@ -26,9 +26,8 @@ class AddCALEntryForm(Form):
 
     mac = TextField('MAC address', [validators.MacAddress(),
                                     validators.Required()])
-    networks = SelectMultipleField('Select one or more networks',
-                                   [validators.Required()])
-    type = SelectField('Select the entry type', [validators.Required()],
+    networks = SelectMultipleField('Select one or more networks')
+    type = SelectField('Select the entry type',
                        choices=[('B', 'Black list'), ('W', 'White list')])
     submit = SubmitField('Save')
 
