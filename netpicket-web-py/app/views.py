@@ -56,6 +56,7 @@ def callback(provider):
 def dashboard(section):
     """Shows the app's dashboard. """
     events, lastkey, alerts, networks, acls, scans, stats = (None,) * 7
+    can_acl = False # Whether the user can create or not an entry. Needs networks
     if section == const.SEC_TIMELINE:
         now = datetime.datetime.now()
         events = {}
@@ -72,6 +73,7 @@ def dashboard(section):
     elif section == const.SEC_NETWORKS:
         networks = models.get_user_networks(current_user.id)
     elif section == const.SEC_ACLS:
+        can_acl = models.get_count_user_networks(current_user.id) > 0
         acls = {}
         acls['W'] = models.get_entries('W', current_user.id)
         acls['B'] = models.get_entries('B', current_user.id)
@@ -84,14 +86,15 @@ def dashboard(section):
     if request.method == 'GET':
         return render_template('dashboard.html', section=section, events=events,
                                lastkey=lastkey, alerts=alerts, nets=networks,
-                               acls=acls, scans=scans, stats=stats,
+                               acls=acls, canacl=can_acl, scans=scans,
+                               stats=stats,
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
                                    prefix='add-entry-f').new(current_user.id))
     else: # PUT requests
-        faddnet = AddNetworkForm(prefix='add-net-f')
-        faddentry = AddCALEntryForm(prefix='add-entry-f').new(current_user.id)
-        neterrors, entryerrors = (False, ) * 2
+        faddnet = AddNetworkForm(request.form, prefix='add-net-f')
+        faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(current_user.id)
+        neterrors, entryerrors, entryneterror, entryincon = (False, ) * 4
         if section == const.SEC_NETWORKS:
             if faddnet.validate_on_submit():
                 nname = faddnet.name.data
@@ -103,22 +106,33 @@ def dashboard(section):
             else:
                 neterrors = True
         elif section == const.SEC_ACLS:
+            can_acl = models.get_count_user_networks(current_user.id) > 0
+            networks = [1] #faddentry.networks.data
             mac = faddentry.mac.data
-            networks = faddentry.networks.data
             list_type = faddentry.type.data
-            print mac
             print networks
+            print mac
             print list_type
+            print " [INFO] on acls"
             if faddentry.validate_on_submit():
-                print " [INFO] entry form ok"
+                print " [INFO] entry form ACK"
+                if models.is_entry_consistent(current_user.id, list_type, mac,
+                                              networks):
+                    models.save_entry(current_user.id, list_type, '', mac,
+                                      '', networks)
+                else:
+                    entryincon = True
             else:
+                print " [INFO] entry form NACK"
+                entryneterror = len(networks) == 0
                 entryerrors = True
         return render_template('dashboard.html', section=section,
                                events=events, lastkey=lastkey,
                                alerts=alerts, nets=networks, acls=acls,
-                               scans=scans, stats=stats,
+                               canacl=can_acl, scans=scans, stats=stats,
                                faddnet=faddnet, neterrors=neterrors,
-                               faddentry=faddentry, entryerrors=entryerrors)
+                               faddentry=faddentry, entryerrors=entryerrors,
+                               entryneterror=entryneterror, inconsistent=entryincon)
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():

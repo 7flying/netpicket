@@ -87,15 +87,18 @@
   <div class="col-md-12 col-sm-12 col-xs-12">
     {% if section == 'timeline' %}
     <!-- TIMELINE -->
+    {% if events.keys()|length == 0 %}
+    <br>
+    <div class="alert alert-info" role="alert">
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      <span class="sr-only">Hey! You don't have events</span><strong>No activity! </strong>
+      We haven't registered any activity.
+    </div>
+    {% else %}
     <h4><small><strong>UPDATED AT: </strong>
-        {% if events.keys()|length > 0 %}
         <strong id="updated-ago">{{events[lastkey][0]['day']
           ~ ' ' ~ events[lastkey][0]['time']}}</strong>
-        {% else %}
-        <strong id="updated-ago">...</strong>
-        {% endif %}
     </small></h4>
-
     <br>
     <dl class="dl-horizontal" id="timeline-updates">
       {% if events.keys()|length > 0 %}
@@ -119,7 +122,7 @@
                 {{even['desc']}}
               </td>
               <td><a href="{{url_for('dashboard',
-                           section='networks')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
+                     section='networks')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
             </tr>
             {% endfor %}
           <tbody>
@@ -128,7 +131,9 @@
       {% endfor %}
       {% endif %}
     </dl>
+    {% endif %}
     <!-- END TIMELINE -->
+    
     {% elif section == 'networks' %}
     <br>
     <div class="col-md-12">
@@ -144,18 +149,21 @@
               data-target="#collapse-add-net" aria-expanded="false"
               aria-controls="collapse-add-net">
         <span id="icon-collapse-pa" class="fa fa-plus-square"
-              aria-hidden="true"></span> Add
+              aria-hidden="true"></span> Add network
       </button>  
     </div>
     <!-- collapse add net-->
     <div class="collapse col-md-8" id="collapse-add-net">
       <br>
       <div class="well">
-        <h4><i class="fa fa-wifi"></i> Add network</h4>
+        <h4><i class="fa fa-wifi"></i> New network</h4>
         {{wtf.quick_form(faddnet)}}
       </div>
     </div>
     <!-- end  add net-->
+    <div class="col-md-12">
+      <h4>My networks</h4>
+    </div>
     {% if nets|length == 0 %}
     <br>
     <div class="col-md-12">
@@ -167,8 +175,7 @@
     </div>
     {% else %}
     <hr>
-    <div class="col-md-12">
-      <h4>My networks</h4>
+    <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="panel-group" id="accordion-nets" role="tablist"
            aria-multiselectable="true">
         {% for net in nets %}
@@ -243,8 +250,10 @@
         </div>
         {% endfor %}
       </div>
+      <br>
     </div>
     {% endif %}
+    
     {% elif section == 'alerts' %}
     <div class="col-md-12">
       <br>
@@ -311,16 +320,23 @@
             data-target="#collapse-add-entry" aria-expanded="false"
             aria-controls="collapse-add-entry">
       <span id="icon-collapse-pa" class="fa fa-plus-square"
-            aria-hidden="true"></span> Add
+            aria-hidden="true"></span> New list entry
     </button>  
   </div>
   <!-- collapse add entry-->
   <div class="collapse col-md-8" id="collapse-add-entry">
     <br>
+    {% if canacl %}
     <div class="well clearfix">
       <h4><i class="fa fa-list"></i> Add entry</h4>
-      <!-- wtf.quick_form(faddentry)}} -->
       <form class="form" role="form" method="post">
+        {% if inconsistent %}
+        <div class="alert alert-danger" role="alert">
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          <span class="sr-only">You need to add a network</span><strong>Error!</strong>
+          This entry is inconsistent with the previous rules. Please revise it.
+        </div>
+        {% endif %}
         {{wtf.form_field(faddentry.mac)}}
         <div class="form-group">
           <label class="control-label" for="add-entry-f-networks">
@@ -328,20 +344,48 @@
           </label>
           {{faddentry.type(class_="form-control selectpicker")}}
         </div>
-        <div class="form-group">
-          <label class="control-label" for="add-entry-f-networks">
+        <div {% if entryneterror %}
+             class="form-group has-error" {% else %} class="form-group" {% endif %}>
+          <label for="add-entry-f-networks"
+                 {% if entryneterror %}
+                 class="control-label text-danger"
+                 {% else %}
+                 class="control-label"
+                 {% endif %}
+                 >
             Select one or more networks
           </label>
           {{faddentry.networks(class_="form-control selectpicker")}}
         </div>
-          {{faddentry.submit(class_="btn btn-default ")}}
+        {{faddentry.submit(class_="btn btn-default ")}}
       </form>
     </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      <span class="sr-only">You need to add a network</span><strong>Hold on!</strong>
+      You need to
+      <a href="{{url_for('dashboard', section='networks')}}">add a network</a>
+      before creating an W/B list entry.
+    </div>
+    {% endif %}
   </div>
   <hr>
   <!-- end  add entry-->
   <div class="col-md-12">
     <h4>My white &amp; black lists</h4>
+  </div>
+  <!-- white list -->
+  {% if acls is none or acls.keys()|length == 0 or acls['W']|length == 0 %}
+  <div class="col-md-12">
+    <div class="alert alert-info" role="alert">
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      <span class="sr-only">Hey! You don't have white lists</span><strong>Empty! </strong>
+      Your white list is empty please add an entry.
+    </div>
+  </div>
+  {% else %}
+  <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
         <span><i class="fa fa-file-text-o"></i></span>
@@ -371,7 +415,7 @@
                 <td><ul class="list-inline">
                     {% for id, name in entry['nets'] %} 
                     <li><a href="{{url_for('dashboard',
-                                 section='networks')}}#net-{{id}}">{{name}}</a></li>
+                           section='networks')}}#net-{{id}}">{{name}}</a></li>
                     {% endfor %}
                 </ul></td>
                 <td><button class="btn btn-default btn-sm" type="button">
@@ -388,6 +432,18 @@
       </div>
     </div><!-- default -->
   </div><!-- col-md- 12 -->
+  {% endif %}
+  <!-- end white list -->
+  <!-- black list -->
+  {% if acls is none or acls.keys()|length == 0 or acls['B']|length == 0 %}
+  <div class="col-md-12">
+    <div class="alert alert-info" role="alert">
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      <span class="sr-only">Hey! You don't have black lists</span><strong>Empty!</strong>
+      Your black list is empty, please add an entry.
+    </div>
+  </div>
+  {% else %}
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -417,7 +473,7 @@
                 <td><ul class="list-inline">
                     {% for id, name in entry['nets'] %} 
                     <li><a href="{{url_for('dashboard',
-                                 section='networks')}}#net-{{id}}">{{name}}</a></li>
+                           section='networks')}}#net-{{id}}">{{name}}</a></li>
                     {% endfor %}
                 </ul></td>
                 <td><button class="btn btn-default btn-sm" type="button">
@@ -434,7 +490,8 @@
       </div>
     </div><!-- default -->
   </div><!-- col-md- 12 -->
-
+  {% endif %}
+  <!-- end black list -->
   {% elif section == 'scans' %}
   {% elif section == 'stats' %}
   {% endif %}

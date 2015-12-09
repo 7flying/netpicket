@@ -59,6 +59,12 @@ def _get_key_net():
     """Returns an str with the next network key id."""
     return str(red.incr(_KEY_NET_ID))
 
+def get_count_user_networks(user_id):
+    """Returns the number of nets. a user has."""
+    length = red.llen(_KEY_NETS_USER.format(str(user_id)))
+    print " [INFO DB] net length", length
+    return length if length is not None else 0
+
 def get_user_networks(user_id):
     """Returns all the user's networks."""
     keys = red.lrange(_KEY_NETS_USER.format(str(user_id)), 0, -1)
@@ -214,6 +220,12 @@ _KEY_ENTRY_WHITE_USER = 'white:user:{0}'
 def _get_key_entry():
     """Returns a str with the next entry key."""
     return str(red.incr(_KEY_ENTRY_ID))
+
+def is_entry_consistent(user_id, typ, mac, nets):
+    """Check whether the new entry rule is consistent with the existing ones,
+    aka not black list and white list at the same time."""
+    # TODO
+    return True
 
 def save_entry(user_id, typ, host, mac, addr, nets):
     """Saves and entry."""

@@ -10,9 +10,9 @@ import app.models as models
 class AddNetworkForm(Form):
 
     name = TextField('Network name', [validators.Length(min=1, max=30,
-                                                        message='From 1 to 30 characters')])
+                                                        message='From 1 to 30 characters.')])
     ipaddress = TextField("Buoy's IP address", [validators.IPAddress(
-        message='IPv4 address'), validators.Required()])
+        message='IPv4 address.'), validators.Required()])
     submit = SubmitField('Save')
 
 def get_network_options(user_id):
@@ -30,6 +30,10 @@ class AddCALEntryForm(Form):
     type = SelectField('Select the entry type',
                        choices=[('B', 'Black list'), ('W', 'White list')])
     submit = SubmitField('Save')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(AddCALEntryForm, self).__init__(*args, **kwargs)
 
     @classmethod
     def new(cls, user_id):
