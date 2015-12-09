@@ -83,7 +83,7 @@ $(document).ready(function() {
         //     timelineSSE();
     }
     
-    $('#button-add-net').on('click', function() {
+    $('.button-icon-collapse').on('click', function() {
         if ($('#icon-collapse-pa').hasClass('fa-plus-square')) {
             $('#icon-collapse-pa').removeClass(
                 "fa-plus-square").addClass("fa-minus-square");
@@ -97,5 +97,9 @@ $(document).ready(function() {
     if (document.getElementById('neterrors') != null) {
         $("#button-add-net").click();
     }
+    if (document.getElementById('entryerrors') != null) {
+        $("#button-add-entry").click();
+    }
     $("[rel='tooltip']").tooltip();
+    $('.selectpicker').selectpicker();
 });

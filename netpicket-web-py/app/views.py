@@ -13,7 +13,7 @@ from flask import render_template, redirect, request, url_for, g, json,\
 
 from app import app, db, red, login_manager
 from app.auth import OAuthSignIn
-from app.forms import AddNetworkForm
+from app.forms import AddNetworkForm, AddCALEntryForm
 import app.models as models
 
 
@@ -85,9 +85,12 @@ def dashboard(section):
         return render_template('dashboard.html', section=section, events=events,
                                lastkey=lastkey, alerts=alerts, nets=networks,
                                acls=acls, scans=scans, stats=stats,
-                               faddnet=AddNetworkForm(prefix='add-net-f'))
+                               faddnet=AddNetworkForm(prefix='add-net-f'),
+                               faddentry=AddCALEntryForm(
+                                   prefix='add-entry-f').new(current_user.id))
     else:
         faddnet = AddNetworkForm(prefix='add-net-f')
+        faddentry = AddCALEntryForm(prefix='add-entry-f').new(current_user.id)
         neterrors = False
         if section == const.SEC_NETWORKS:
             if faddnet.validate_on_submit():
@@ -103,7 +106,8 @@ def dashboard(section):
                                events=events, lastkey=lastkey,
                                alerts=alerts, nets=networks, acls=acls,
                                scans=scans, stats=stats,
-                               faddnet=faddnet, neterrors=neterrors)
+                               faddnet=faddnet, neterrors=neterrors,
+                               faddentry=faddentry)
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():

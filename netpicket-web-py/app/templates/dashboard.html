@@ -135,18 +135,17 @@
       {% if neterrors %}
       <div id="neterrors" class="alert alert-danger" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-        <span class="sr-only">Error! You don't have networks</span><strong>Hey!</strong>
+        <span class="sr-only">Invalid or empty fields on form.</span><strong>Hey!</strong>
         Invalid or empty fields on form.
       </div>
       {% endif %}
       <button id="button-add-net"
-              type="button" class="btn btn-primary" data-toggle="collapse"
+              type="button" class="button-icon-collapse btn btn-primary" data-toggle="collapse"
               data-target="#collapse-add-net" aria-expanded="false"
               aria-controls="collapse-add-net">
         <span id="icon-collapse-pa" class="fa fa-plus-square"
               aria-hidden="true"></span> Add
-      </button>
-      
+      </button>  
     </div>
     <!-- collapse add net-->
     <div class="collapse col-md-8" id="collapse-add-net">
@@ -156,8 +155,7 @@
         {{wtf.quick_form(faddnet)}}
       </div>
     </div>
-    
-    <!-- end modal add net-->
+    <!-- end  add net-->
     {% if nets|length == 0 %}
     <br>
     <div class="col-md-12">
@@ -301,6 +299,51 @@
   {% elif section == 'wblists' %}
   <br>
   <div class="col-md-12">
+    {% if entryerrors %}
+    <div id="neterrors" class="alert alert-danger" role="alert">
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      <span class="sr-only">Invalid or empty fields on form.</span><strong>Hey!</strong>
+      Invalid or empty fields on form.
+    </div>
+    {% endif %}
+    <button id="button-add-entry"
+            type="button" class="button-icon-collapse btn btn-primary" data-toggle="collapse"
+            data-target="#collapse-add-entry" aria-expanded="false"
+            aria-controls="collapse-add-entry">
+      <span id="icon-collapse-pa" class="fa fa-plus-square"
+            aria-hidden="true"></span> Add
+    </button>  
+  </div>
+  <!-- collapse add entry-->
+  <div class="collapse col-md-8" id="collapse-add-entry">
+    <br>
+    <div class="well clearfix">
+      <h4><i class="fa fa-list"></i> Add entry</h4>
+      <!-- wtf.quick_form(faddentry)}} -->
+      <form class="form" role="form" method="post">
+        <div class="form-group">
+          <label class="control-label" for="add-entry-f-mac">MAC</label>
+          {{faddentry.mac(class_="form-control")}}
+        </div>
+        <div class="form-group">
+          <label class="control-label" for="add-entry-f-networks">
+            Select the list type
+          </label>
+          {{faddentry.type(class_="form-control selectpicker")}}
+        </div>
+        <div class="form-group">
+          <label class="control-label" for="add-entry-f-networks">
+            Select one or more networks
+          </label>
+          {{faddentry.networks(class_="form-control selectpicker")}}
+        </div>
+          {{faddentry.submit(class_="btn btn-default ")}}
+      </form>
+    </div>
+  </div>
+  <hr>
+  <!-- end  add entry-->
+  <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
         <span><i class="fa fa-file-text-o"></i></span>
@@ -321,7 +364,6 @@
             <tbody>
               {% for entry in acls['W'] %}
               <tr>
-                
                 <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
                 <td>{{entry['mac']}}</td>
                 <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
@@ -342,15 +384,6 @@
           </table>
         </div>
       </div>
-      <div class="panel-footer">
-        <div class="pull-right">
-          <button class="btn btn-default"
-                  type="button">
-            <span class="fa fa-plus-circle"></span> Add
-          </button>
-        </div>
-        <div class="clearfix"></div>
-      </div><!-- footer -->
     </div><!-- default -->
   </div><!-- col-md- 12 -->
   <div class="col-md-12">
@@ -393,15 +426,6 @@
           </table>
         </div>
       </div>
-      <div class="panel-footer">
-        <div class="pull-right">
-          <button class="btn btn-default"
-                  type="button">
-            <span class="fa fa-plus-circle"></span> Add
-          </button>
-        </div>
-        <div class="clearfix"></div>
-      </div><!-- footer -->
     </div><!-- default -->
   </div><!-- col-md- 12 -->
 
