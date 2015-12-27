@@ -9,7 +9,7 @@ import const, config
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
 from flask import render_template, redirect, request, url_for, g, json,\
-     Response, abort, flash
+     Response, abort, flash, jsonify
 
 from app import app, db, red, login_manager
 from app.auth import OAuthSignIn
@@ -79,6 +79,7 @@ def dashboard(section, id):
         acls = {}
         acls['W'] = models.get_entries('W', current_user.id)
         acls['B'] = models.get_entries('B', current_user.id)
+        print acls
     elif section == const.SEC_SCANS:
         pass
     elif section == const.SEC_STATS:
@@ -93,7 +94,7 @@ def dashboard(section, id):
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
                                    prefix='add-entry-f').new(current_user.id))
-    elif request.method == 'PUT': # PUT requests
+    elif request.method == 'POST':
         faddnet = AddNetworkForm(request.form, prefix='add-net-f')
         faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(
             current_user.id)
@@ -129,6 +130,7 @@ def dashboard(section, id):
                 print " [INFO] entry form NACK"
                 entryneterror = len(networks) == 0
                 entryerrors = True
+        print " [INFO] RETURNING POST"
         return render_template('dashboard.html', section=section,
                                events=events, lastkey=lastkey,
                                alerts=alerts, nets=networks, acls=acls,
@@ -216,3 +218,47 @@ def timeline():
     """Subscribe/receive timeline events."""
     print " [INFO] timeline"
     return Response(timeline_event_stream(current_user.id), mimetype='text/event-stream')
+
+@app.route('/checkstats')
+@login_required
+def check_stats():
+    now = datetime.datetime.now()
+    nets = models.get_user_networks(current_user.id)
+    # order of the days
+    order = []
+    # net id to name
+    net_idname = {}
+    net_ids = []
+    # per day stats
+    type_count_day = {}
+    net_count_day = {}
+    # per week stats
+    type_count_week = {'R': 0, 'O': 0, 'B': 0}
+    net_count_week = {}
+    for net in nets:
+        net_ids.append(int(net['id']))
+        net_count_week[net['id']] = 0
+        net_idname[net['id']] = net['name']
+    for day in range(6, -1, -1): # 6 - 0
+        then = now - datetime.timedelta(days=day)
+        day_str = then.strftime(const.STRTIME_DAY)
+        order.append(day_str)
+        type_count_day[day_str] = {'R': 0, 'O': 0, 'B': 0}
+        net_count_day[day_str] = {}
+        for net in nets:
+            net_count_day[day_str][net['id']] = 0
+        for event in models.get_user_events_date(current_user.id,
+                                                 then.strftime(
+                                                     const.STRTIME_DATE)):
+            if event['priority'] != 'G':
+                type_count_day[day_str][event['priority']] += 1
+                type_count_week[event['priority']] += 1
+                net_count_day[day_str][event['net'][0]] += 1
+                net_count_week[event['net'][0]] += 1
+    print {'status': 200, 'days' : order, 'nets' : net_idname,
+                    'type_day': type_count_day, 'type_week': type_count_week,
+                    'net_day': net_count_day, 'net_week': net_count_week}
+    return jsonify({'status': 200, 'days' : order, 'nets' : net_idname,
+                    'net_ids': net_ids, 'type_day': type_count_day,
+                    'type_week': type_count_week, 'net_day': net_count_day,
+                    'net_week': net_count_week})

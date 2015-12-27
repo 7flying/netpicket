@@ -98,3 +98,10 @@ img.center {
 h1, h2, h3, h4, h5, h6, p, div {
     font-family: 'Open Sans', sans-serif;
 }
+/* --- Charts --- */
+.chart-legend li span{
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+}

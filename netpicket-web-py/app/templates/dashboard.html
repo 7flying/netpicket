@@ -371,7 +371,7 @@
       <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
       <span class="sr-only">You need to add a network</span><strong>Hold on!</strong>
       You need to
-      <a href="{{url_for('dashboard', section='networks', id='')}}">add a network</a>
+      <a href="{{url_for('dashboard', section='networks', id='default')}}">add a network</a>
       before creating an W/B list entry.
     </div>
     {% endif %}
@@ -387,7 +387,7 @@
     <div class="alert alert-info" role="alert">
       <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
       <span class="sr-only">Hey! You don't have white lists</span><strong>Empty! </strong>
-      Your white list is empty please add an entry.
+      Your white list is empty, please add an entry.
     </div>
   </div>
   {% else %}
@@ -421,7 +421,7 @@
                 <td><ul class="list-inline">
                     {% for id, name in entry['nets'] %} 
                     <li><a href="{{url_for('dashboard',
-                           section='networks', id='')}}#net-{{id}}">{{name}}</a></li>
+                           section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
                     {% endfor %}
                 </ul></td>
                 <td><button class="btn btn-default btn-sm" type="button">
@@ -468,7 +468,7 @@
                 <td></td>
             </thead>
             <tbody>
-              {% if acls['W']|length == 0 %}
+              {% if acls['B']|length == 0 %}
               <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
               {% else %}
               {% for entry in acls['B'] %}
@@ -479,7 +479,7 @@
                 <td><ul class="list-inline">
                     {% for id, name in entry['nets'] %} 
                     <li><a href="{{url_for('dashboard',
-                           section='networks', id='')}}#net-{{id}}">{{name}}</a></li>
+                           section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
                     {% endfor %}
                 </ul></td>
                 <td><button class="btn btn-default btn-sm" type="button">
@@ -500,6 +500,57 @@
   <!-- end black list -->
   {% elif section == 'scans' %}
   {% elif section == 'stats' %}
+  <div class="col-md-12">
+    <h4>Weekly statistics</h4>
+  </div>
+  <div class="col-md-6">
+    <h5>Events by type</h5>
+    <div id="ned-comp" class="alert alert-info" role="alert"
+         style="display: none">
+      <strong>Ups!</strong> We haven't events to show the type distribution.
+    </div>
+    <div id="loading-tweek">
+      <i class="fa fa-2x fa-spinner fa-pulse"></i>
+    </div>
+    <div class="col-md-4 chart-legend" id="tweek-legend">
+    </div>
+    <div class="col-md-2">
+      <canvas id="can-tweek" width="250" height="250"></canvas>
+    </div>  
+  </div>
+  <div class="col-md-6">
+    <h5>Events by network</h5>
+    <div id="ned-comp" class="alert alert-info" role="alert"
+         style="display: none">
+      <strong>Ups!</strong> We haven't events to show the distribution.
+    </div>
+    <div id="loading-nweek">
+      <i class="fa fa-2x fa-spinner fa-pulse"></i>
+    </div>
+    <div class="col-md-4 chart-legend" id="nweek-legend">
+    </div>
+    <div class="col-md-2">
+      <canvas id="can-nweek" width="250" height="250"></canvas>
+    </div>  
+  </div>
+  <div class="col-md-12">
+    <h4>Daily statistics</h4>
+  </div>
+  <div class="col-md-6">
+    <h5>Event types by day</h5>
+    <div id="ned-comp" class="alert alert-info" role="alert"
+         style="display: none">
+      <strong>Ups!</strong> We haven't events to show the distribution.
+    </div>
+    <div id="loading-tday">
+      <i class="fa fa-2x fa-spinner fa-pulse"></i>
+    </div>
+    <div class="col-md-4 chart-legend" id="tday-legend">
+    </div>
+    <div class="col-md-2">
+      <canvas id="can-tday" width="250" height="250"></canvas>
+    </div>  
+  </div>
   {% endif %}
 </div>
 </div>
