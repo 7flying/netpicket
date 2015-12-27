@@ -149,6 +149,31 @@ function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
     var nweek_chart = new Chart(nweek_context).Doughnut(data_nweek, options);
     document.getElementById('nweek-legend').innerHTML = nweek_chart.generateLegend();
     document.getElementById('loading-nweek').style.display = "none";
+    // Daily events by type
+    var optionsLine = {legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"};
+    var data_tday = { labels: days, datasets: []};
+    var temp_tday = {};
+    for (var i = 0; i < event_types.length; i++) {
+        temp_tday[event_types[i]] = {label: labels[event_types[i]],
+                                     fillColor: colors[event_types[i]],
+                                     strokeColor: colors[event_types[i]],
+                                     pointColor: colors[event_types[i]],
+                                     pointStrokeColor: "#fff",
+                                     pointHighlightFill: "#fff",
+                                     pointHighlightStroke: colors[event_types[i]],
+                                     data: []};
+    }
+    window.console.log(tday);
+    for (var i = 0; i < days.length; i++) {
+        for (var j = 0; j < event_types.length; j++) {
+            temp_tday[event_types[j]].data.push(tday[days[i]][event_types[j]]);
+        }
+    }
+    data_tday.datasets.push(temp_tday);
+    var tday_context = document.getElementById('can-tday').getContext('2d');
+    var tday_chart = new Chart(tday_context).Line(data_tday, optionsLine);
+    document.getElementById('loading-tday').style.display = "none";
+    
 }
 
 function getStats() {
