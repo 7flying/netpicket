@@ -104,8 +104,29 @@ def get_network(network_id):
 def delete_network(user_id, net_id):
     """Deletes a network."""
     pip = red.pipeline()
-    pip.delete(_KEY_NET.format(str(net_id)))
-    pip.lrem(_KEY_NETS_USER.format(str(user_id)), 1, str(net_id))
+    user_id = str(user_id)
+    net_id = str(net_id)
+    pip.delete(_KEY_NET.format(net_id))
+    pip.lrem(_KEY_NETS_USER.format(user_id), 0, net_id)
+    # Delete associated events
+    events = get_user_events_network(user_id, net_id)
+    for event in events:
+        pip.lrem(_KEY_EVENTS_USER_DATE.format(user_id, event['date']),
+                 0, event['id'])
+        pip.delete(_KEY_EVENT_USER.format(event['id'], user_id))
+    pip.delete(_KEY_EVENTS_USER_NET.format(user_id, net_id)) # user-network
+    # Delete associated entries on wb lists
+    for entry in _get_entries_network(net_id, user_id):
+        # delete network from the entry, if it has one network delete entry
+        if len(red.lrange(_KEY_ENTRY_LIST_NETS.format(entry['id']),
+                          0, -1)) == 1:
+            pip.delete(_KEY_ENTRY_USER.format(entry['id'], user_id))
+            # delete from w or b list of entries
+            if entry['type'] == 'B':
+                pip.lrem(_KEY_ENTRY_BLACK_USER.format(user_id), 0, entry['id'])
+            else:
+                pip.lrem(_KEY_ENTRY_WHITE_USER.format(user_id), 0, entry['id'])
+        pip.lrem(_KEY_ENTRY_LIST_NETS.format(entry['id']), 0, net_id)
     pip.execute()
 
 # --- Events --- #
@@ -136,9 +157,9 @@ def save_event(user_id, net_id, event_desc, date, day, time, priority):
     pipe = red.pipeline()
     pipe.lpush(_KEY_EVENTS_USER_DATE.format(user_id, date), key)
     pipe.lpush(_KEY_EVENTS_USER_NET.format(user_id, net_id), key)
-    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DESC, event_desc)
+    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DESC,
+              event_desc)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_NET, net_id)
-    pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DATE, date)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DATE, date)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_DAY, day)
     pipe.hset(_KEY_EVENT_USER.format(key, user_id), _ATTR_EVENT_TIME, time)
@@ -205,6 +226,7 @@ def get_user_events_day_network(user_id, network_id, day):
 # WB lists' entries are stored in hashes, which hold the entry's main properties.
 # The entry id must be generated using _get_key_entry().
 # Each entry has an associated network id list,
+# Each network has an associated list of wb entries
 # Each user has two lists that hold the ids of  black list and white list entries.
 _KEY_ENTRY_ID = 'list-entry-i-auto:'
 _KEY_ENTRY_USER = 'entry:{0}:user:{1}'
@@ -217,6 +239,8 @@ _KEY_ENTRY_LIST_NETS = 'entry:{0}:list-nets'
 _KEY_ENTRY_BLACK_USER = 'black:user:{0}'
 _KEY_ENTRY_WHITE_USER = 'white:user:{0}'
 
+_KEY_NET_LIST_ENTRIES = 'net:{0}:list-entries'
+
 def _get_key_entry():
     """Returns a str with the next entry key."""
     return str(red.incr(_KEY_ENTRY_ID))
@@ -226,6 +250,16 @@ def is_entry_consistent(user_id, typ, mac, nets):
     aka not black list and white list at the same time."""
     # TODO
     return True
+
+def _get_entries_network(net_id, user_id):
+    """Gets the entries with the given network."""
+    net_id = str(net_id)
+    user_id = str(user_id)
+    entries = red.lrange(_KEY_NET_LIST_ENTRIES.format(net_id), 0, -1)
+    ret = []
+    for entry in entries:
+        ret.append(get_entry(user_id, entry))
+    return ret
 
 def save_entry(user_id, typ, host, mac, addr, nets):
     """Saves and entry."""
@@ -243,6 +277,7 @@ def save_entry(user_id, typ, host, mac, addr, nets):
         pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_ADDR, addr)
         for net in nets:
             pipe.rpush(_KEY_ENTRY_LIST_NETS.format(key), str(net))
+            pipe.rpush(_KEY_NET_LIST_ENTRIES.format(str(net)), key)
         pipe.execute()
 
 def get_entry(user_id, entry_id):

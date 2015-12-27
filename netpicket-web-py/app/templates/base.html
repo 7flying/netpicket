@@ -16,7 +16,8 @@
         <span class="icon-bar"></span>
       </button>
       {% if current_user.is_authenticated %}
-      <a class="navbar-brand" href="{{ url_for('dashboard', section='timeline') }}">
+      <a class="navbar-brand" href="{{ url_for('dashboard', section='timeline',
+                                    id='') }}">
       {% else %}
       <a class="navbar-brand" href="{{ url_for('main_page') }}">
       {% endif %}

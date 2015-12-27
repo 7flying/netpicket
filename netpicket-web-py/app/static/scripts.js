@@ -89,6 +89,23 @@ function changeClassButtonIcon() {
     }
 }
 
+function deleteNetwork(netId) {
+    $.ajax({
+        type: 'DELETE',
+        url: '/dashboard/networks/' + netId,
+        success: function(data) {
+            window.console.log(data);
+            $('#net-' + netId).remove();
+            window.console.log("deleting net: " + netId);
+        },
+        error: function(data) {
+            
+        }
+    });
+   
+    
+}
+
 $(document).ready(function() {
     if (window.location.href.indexOf('dashboard') > -1) {
         // if (document.getElementById('updated-ago') != null)

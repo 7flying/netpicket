@@ -9,8 +9,9 @@ import app.models as models
 
 class AddNetworkForm(Form):
 
-    name = TextField('Network name', [validators.Length(min=1, max=30,
-                                                        message='From 1 to 30 characters.')])
+    name = TextField('Network name',
+                     [validators.Length(min=1, max=30,
+                                        message='From 1 to 30 characters.')])
     ipaddress = TextField("Buoy's IP address", [validators.IPAddress(
         message='IPv4 address.'), validators.Required()])
     submit = SubmitField('Save')

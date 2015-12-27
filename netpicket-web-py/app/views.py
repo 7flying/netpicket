@@ -50,11 +50,13 @@ def callback(provider):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-@app.route('/dashboard/', defaults={'section': 'timeline'}, methods=['GET', 'POST'])
-@app.route('/dashboard/<section>', methods=['GET', 'POST'])
+@app.route('/dashboard/', defaults={'section': 'timeline', 'id': ''},
+           methods=['GET', 'POST', 'DELETE'])
+@app.route('/dashboard/<section>/<id>', methods=['GET', 'POST', 'DELETE'])
 @login_required
-def dashboard(section):
+def dashboard(section, id):
     """Shows the app's dashboard. """
+    print "[INFO] section %s, id %s" % (section, id)
     events, lastkey, alerts, networks, acls, scans, stats = (None,) * 7
     can_acl = False # Whether the user can create or not an entry. Needs networks
     if section == const.SEC_TIMELINE:
@@ -91,9 +93,10 @@ def dashboard(section):
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
                                    prefix='add-entry-f').new(current_user.id))
-    else: # PUT requests
+    elif request.method == 'PUT': # PUT requests
         faddnet = AddNetworkForm(request.form, prefix='add-net-f')
-        faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(current_user.id)
+        faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(
+            current_user.id)
         neterrors, entryerrors, entryneterror, entryincon = (False, ) * 4
         if section == const.SEC_NETWORKS:
             if faddnet.validate_on_submit():
@@ -132,7 +135,21 @@ def dashboard(section):
                                canacl=can_acl, scans=scans, stats=stats,
                                faddnet=faddnet, neterrors=neterrors,
                                faddentry=faddentry, entryerrors=entryerrors,
-                               entryneterror=entryneterror, inconsistent=entryincon)
+                               entryneterror=entryneterror,
+                               inconsistent=entryincon)
+    elif request.method == 'DELETE':
+        if section == const.SEC_NETWORKS:
+            if id is not None and len(id) > 0:
+                models.delete_network(current_user.id, id)
+                networks = models.get_user_networks(current_user.id)
+        return render_template('dashboard.html', section=section, events=events,
+                               lastkey=lastkey, alerts=alerts, nets=networks,
+                               acls=acls, canacl=can_acl, scans=scans,
+                               stats=stats,
+                               faddnet=AddNetworkForm(prefix='add-net-f'),
+                               faddentry=AddCALEntryForm(
+                                   prefix='add-entry-f').new(current_user.id))
+
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():
