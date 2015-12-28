@@ -144,8 +144,8 @@ function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
     var data_nweek = [];
     for (var i = 0; i < upTo; i++) {
         data_nweek.push({value: nweek[nids[i]],
-                         color: netcolors[i],
-                         highlight: netcolors_high[i],
+                         color: netcolors[nids[i] % 10],
+                         highlight: netcolors_high[nids[i] % 10],
                          label: nets[nids[i]]});
     }
     var nweek_context = document.getElementById('can-nweek').getContext('2d');
@@ -194,6 +194,30 @@ function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
     var tdayline_context = document.getElementById('can-tday-line').getContext('2d');
     var tdayline_chart = new Chart(tdayline_context).Line(data_tday_line, optionsLine);
     document.getElementById('loading-tday-line').style.display = "none";
+    // Daily events by network
+    var data_nday = { labels: days, datasets: []};
+    var temp_nday = {};
+    for (var i = 0; i < upTo; i++) {
+        temp_nday[nids[i]] = {label: nets[nids[i]],
+                              fillColor: netcolors_rgb[nids[i] % 10] + "0.7)",
+                              strokeColor: netcolors[nids[i] % 10],
+                              pointColor: netcolors[nids[i] % 10],
+                              pointStrokeColor: "#fff",
+                              pointHighlightFill: "#fff",
+                              pointHighlightStroke: netcolors[nids[i] % 10],
+                              data: []};
+    }
+    for (var i = 0; i < days.length; i++) {
+        for (var j = 0; j < upTo; j++) {
+            temp_nday[nids[j]].data.push(nday[days[i]][nids[j]]);
+        }
+    }
+    for (var i = 0; i < upTo; i++) {
+        data_nday.datasets.push(temp_nday[nids[i]]);
+    }
+    var nday_context = document.getElementById('can-nday').getContext('2d');
+    var nday_chart = new Chart(nday_context).Bar(data_nday, optionsLine);
+    document.getElementById('loading-nday').style.display = "none";
 
 }
 
@@ -201,7 +225,6 @@ function getStats() {
     var days = nets = nids = type_day = net_day = type_week = net_week = 0;
     $.get('/checkstats', function(res) {
         if (res.status === 200) {
-            window.console.log(res);
             days = res.days;
             nets = res.nets;
             nids = res.net_ids;

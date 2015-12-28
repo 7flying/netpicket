@@ -547,7 +547,7 @@
       <i class="fa fa-2x fa-spinner fa-pulse"></i>
     </div>
     <div class="col-md-6">
-      <canvas id="can-tday-bar" width="400" height="250"></canvas>
+      <canvas id="can-tday-bar" width="425" height="250"></canvas>
     </div>  
   </div>
   <div class="col-md-6">
@@ -560,7 +560,20 @@
       <i class="fa fa-2x fa-spinner fa-pulse"></i>
     </div>
     <div class="col-md-6">
-      <canvas id="can-tday-line" width="400" height="250"></canvas>
+      <canvas id="can-tday-line" width="425" height="250"></canvas>
+    </div>  
+  </div>
+  <div class="col-md-12">
+    <h5>Events by network</h5>
+    <div id="ned-comp" class="alert alert-info" role="alert"
+         style="display: none">
+      <strong>Ups!</strong> We haven't events to show the distribution.
+    </div>
+    <div id="loading-nday">
+      <i class="fa fa-2x fa-spinner fa-pulse"></i>
+    </div>
+    <div class="col-md-6">
+      <canvas id="can-nday" width="850" height="250"></canvas>
     </div>  
   </div>
   {% endif %}
