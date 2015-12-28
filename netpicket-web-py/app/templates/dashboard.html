@@ -137,7 +137,6 @@
     
     {% elif section == 'networks' %}
     <br>
-    
     {% if neterrors %}
     <div class="col-md-12">
       <div id="neterrors" class="alert alert-danger" role="alert">
@@ -149,13 +148,12 @@
       </div>
     </div>
     {% endif %}  
-    
-    <div class="col-md-6">
+    <div class="col-md-10">
       <h4>My networks</h4>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-2">
       <button id="button-add-net"
-              type="button" class="pull-right button-icon-collapse btn btn-primary"
+              type="button" class="button-icon-collapse btn btn-primary"
               data-toggle="collapse"
               data-target="#collapse-add-net" aria-expanded="false"
               aria-controls="collapse-add-net">
@@ -267,9 +265,41 @@
     {% endif %}
     {% elif section == 'alerts' %}
     <br>
+    {% if hosterrors %}
     <div class="col-md-12">
+      <div id="hosterrors" class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign"
+              aria-hidden="true"></span>
+        <span class="sr-only">Invalid or empty fields on form.</span>
+        <strong>Hey!</strong>
+        Invalid or empty fields on form.
+      </div>
+    </div>
+    {% endif %} 
+    <div class="col-md-10">
       <h4>Hosts' status</h4>
     </div>
+    <div class="col-md-2">
+      <button id="button-add-host"
+              type="button" class="button-icon-collapse btn btn-primary"
+              data-toggle="collapse"
+              data-target="#collapse-add-host" aria-expanded="false"
+              aria-controls="collapse-add-host">
+        <span id="icon-collapse-pa" class="fa fa-plus-square"
+              aria-hidden="true"></span> Monitor new
+      </button>
+    </div>
+    <br>
+    <!-- collapse add net-->
+    <div class="collapse col-md-8" id="collapse-add-host">
+      <br>
+      <div class="well">
+        <h4><i class="fa fa-laptop"></i> New host</h4>
+        {{wtf.quick_form(faddhost)}}
+      </div>
+    </div>
+    <!-- end  add net-->
+    {% if hosts is none or hosts|length == 0 %}
     <div class="col-md-12">
       <div class="alert alert-info" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -277,41 +307,77 @@
         You aren't monitoring vulnerabilities from any host. Please add one.
       </div>
     </div>
+    {% else %}
+    <!-- end if no hosts -->
     <div class="col-md-12">
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
             <tr>
               <td><strong>Host</strong></td>
-              <td><strong>MAC</strong></td>
               <td><strong>Services</strong></td>
-              <td><strong>Status</strong></td> 
+              <td><strong>Status</strong></td>
+              <td><strong>Known CVEs</strong></td>
+              <td></td>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Even</td>
-              <td>fefe:fe:FAe:FEF:EA</td>
+            {% for host in hosts %}
+            <tr id="{{'host-'~host['id']}}">
+              <td>{{host['name']}}</td>
               <td>
                 <table>
                   <tbody>
-                    <tr class="success"><td>MySQL</td></tr>
-                    <tr><td>MySQL</td></tr>
+                    {% for serv in host['services'] %}
+                    <tr><td>{{serv}}</td></tr>
+                    {% endfor %}
                   </tbody>
                 </table>
               <td>
                 <table>
                   <tbody>
+                    {% for serv in host['services'] %}
+                    {% if vulns is none %}
                     <tr><td class="text-success"><i class="fa fa-shield"></i> Secure</td></tr>
-                    <tr><td class="text-danger"><i class="fa fa-warning"></i> Vulnerable</td></tr>
+                    {% else %}
+                      {% if vulns[serv] %}
+                      <tr><td class="text-danger"><i class="fa fa-warning"></i> Vulnerable</td></tr>
+                      {% else %}
+                      <tr><td class="text-success"><i class="fa fa-shield"></i> Secure</td></tr>
+                      {% endif %}
+                    {% endif %}
+                    {% endfor %}
                   </tbody>
                 </table>
               </td>
+              {% if vulns is none %}
+              <td>-</td>
+              {% else %}
+              <td>
+                <table>
+                  <tbody>
+                    {% for serv in host['services'] %}
+                    {% if vulns[serv] %}
+                    <tr><td>{{vulns[serv]}}</td></tr>
+                    {% else %}<tr><td>-</td></tr>{% endif %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              <td>
+              {% endif %}
+              <td>
+                <button class="btn btn-default btn-sm" type="button">
+                  <span class="fa fa-edit"></span> Edit</button>
+                <button class="btn btn-warning btn-sm" type="button"
+                        onclick="deleteHost('{{host['id']}}');">
+                  <span class="fa fa-remove"></span> Delete</button></td>
             </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
+    {% endif %}
     <div class="col-md-12">
       <h4>Latest CVE details</h4>
     </div>
@@ -339,7 +405,8 @@
           </thead>
           <tbody>
             {% for cve in cves %}
-            <tr {% if cve['cvss_score']|float <= 3.9 %} class="success"
+            <tr id="{{cve['cve_id']}}"
+               {% if cve['cvss_score']|float <= 3.9 %} class="success"
                                                  {% elif cve['cvss_score']|float <= 6.9 %} class="warning"
                                                                                     {% else %} class="danger" {% endif %}>
                                                  <td><strong><a target="_blank"
@@ -370,18 +437,19 @@
   </div>
 </div>
 {% endif %} 
-<div class="col-md-6">
+<div class="col-md-10">
   <h4>My white &amp; black lists</h4>
 </div>
-<div class="col-md-6">
+<div class="col-md-2">
   <button id="button-add-entry"
-          type="button" class="pull-right button-icon-collapse btn btn-primary" data-toggle="collapse"
+          type="button" class="button-icon-collapse btn btn-primary" data-toggle="collapse"
           data-target="#collapse-add-entry" aria-expanded="false"
           aria-controls="collapse-add-entry">
     <span id="icon-collapse-pa" class="fa fa-plus-square"
           aria-hidden="true"></span> New list entry
   </button> 
 </div>
+<br>
 <!-- collapse add entry-->
 <div class="collapse col-md-8" id="collapse-add-entry">
   <br>

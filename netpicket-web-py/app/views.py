@@ -5,7 +5,6 @@ This module holds the views of the app.
 
 import datetime, random, string, gevent, urllib
 import config
-import json as pyjson
 
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
@@ -14,9 +13,10 @@ from flask import render_template, redirect, request, url_for, g, json,\
 
 from app import app, db, red, login_manager
 from app.auth import OAuthSignIn
-from app.forms import AddNetworkForm, AddCALEntryForm
+from app.forms import AddNetworkForm, AddCALEntryForm, AddHostForm
 import app.models as models
 import app.const as const
+import app.cves as cves
 
 @app.route('/')
 def main_page():
@@ -57,8 +57,8 @@ def callback(provider):
 @login_required
 def dashboard(section, id):
     """Shows the app's dashboard. """
-    print "[INFO] section %s, id %s" % (section, id)
-    events, lastkey, alerts, networks, acls, scans, stats = (None,) * 7
+    events, lastkey, alerts, hosts, networks, acls, scans, stats = (None,) * 8
+    vulns = None
     can_acl = False # Whether the user can create or not an entry. Needs networks
     if section == const.SEC_TIMELINE:
         now = datetime.datetime.now()
@@ -77,6 +77,8 @@ def dashboard(section, id):
             alerts = None
         else:
             alerts = alerts['data']
+            vulns = cves.check_vulns(alerts)
+        hosts = models.get_user_hosts(current_user.id)
     elif section == const.SEC_NETWORKS:
         networks = models.get_user_networks(current_user.id)
     elif section == const.SEC_ACLS:
@@ -95,15 +97,18 @@ def dashboard(section, id):
         return render_template('dashboard.html', section=section, events=events,
                                lastkey=lastkey, cves=alerts, nets=networks,
                                acls=acls, canacl=can_acl, scans=scans,
-                               stats=stats,
+                               stats=stats, hosts=hosts, vulns=vulns,
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
-                                   prefix='add-entry-f').new(current_user.id))
+                                   prefix='add-entry-f').new(current_user.id),
+                               faddhost=AddHostForm(prefix='add-host-f'))
     elif request.method == 'POST':
         faddnet = AddNetworkForm(request.form, prefix='add-net-f')
         faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(
             current_user.id)
+        faddhost = AddHostForm(request.form, prefix='add-host-f')
         neterrors, entryerrors, entryneterror, entryincon = (False, ) * 4
+        hosterrors = False
         if section == const.SEC_NETWORKS:
             if faddnet.validate_on_submit():
                 nname = faddnet.name.data
@@ -114,6 +119,16 @@ def dashboard(section, id):
                 networks = models.get_user_networks(current_user.id)
             else:
                 neterrors = True
+        elif section == const.SEC_ALERTS:
+            if faddhost.validate_on_submit():
+                hname = faddhost.name.data
+                hservices = faddhost.services.data
+                hservices = hservices.split(',')
+                hservs_clean = [x.strip() for x in hservices]
+                models.set_host(current_user.id, hname.strip(), hservs_clean)
+                hosts = models.get_user_hosts(current_user.id)
+            else:
+                hosterrors = True
         elif section == const.SEC_ACLS:
             can_acl = models.get_count_user_networks(current_user.id) > 0
             networks = [1] #faddentry.networks.data
@@ -139,6 +154,8 @@ def dashboard(section, id):
                                events=events, lastkey=lastkey,
                                cves=alerts, nets=networks, acls=acls,
                                canacl=can_acl, scans=scans, stats=stats,
+                               hosts=hosts, vulns=vulns,
+                               faddhost=faddhost, hosterrors=hosterrors,
                                faddnet=faddnet, neterrors=neterrors,
                                faddentry=faddentry, entryerrors=entryerrors,
                                entryneterror=entryneterror,
@@ -148,10 +165,15 @@ def dashboard(section, id):
             if id is not None and len(id) > 0:
                 models.delete_network(current_user.id, id)
                 networks = models.get_user_networks(current_user.id)
+        elif section == const.SEC_ALERTS:
+            if id is not None and len(id) > 0:
+                models.delete_host(current_user.id, id)
+                hosts = models.get_user_hosts(current_user.id)
         return render_template('dashboard.html', section=section, events=events,
                                lastkey=lastkey, cves=alerts, nets=networks,
                                acls=acls, canacl=can_acl, scans=scans,
-                               stats=stats,
+                               stats=stats, hosts=hosts, vulns=vulns, 
+                               faddhost=AddHostForm(prefix='add-host-f'),
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
                                    prefix='add-entry-f').new(current_user.id))

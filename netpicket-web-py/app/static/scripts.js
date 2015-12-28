@@ -101,6 +101,18 @@ function deleteNetwork(netId) {
     }); 
 }
 
+function deleteHost(hostId) {
+    $.ajax({
+        type: 'DELETE',
+        url: '/dashboard/alerts/' + hostId,
+        success: function(data) {
+            $('#host-' + hostId).remove();
+        },
+        error: function(data) {
+        }
+    }); 
+}
+
 /*********
  * Stats *
  *********/
@@ -246,12 +258,9 @@ $(document).ready(function() {
         }
     }
     
-    $('#button-add-entry').on('click', function() {
-        changeClassButtonIcon(); 
-    });
-    $('#button-add-net').on('click', function() {
-        changeClassButtonIcon(); 
-    });
+    $('#button-add-entry').on('click', function() { changeClassButtonIcon(); });
+    $('#button-add-net').on('click', function() { changeClassButtonIcon(); });
+    $('#button-add-host').on('click', function() { changeClassButtonIcon(); });
     
     if (document.getElementById('neterrors') != null) {
         $("#button-add-net").click();
@@ -259,6 +268,10 @@ $(document).ready(function() {
     if (document.getElementById('entryerrors') != null) {
         $("#button-add-entry").click();
     }
+    if (document.getElementById('hosterrors') != null) {
+        $("#button-add-host").click();
+    }
+    
     $("[rel='tooltip']").tooltip();
     $('.selectpicker').selectpicker();
 });

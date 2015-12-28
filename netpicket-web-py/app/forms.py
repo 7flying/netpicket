@@ -11,9 +11,11 @@ class AddNetworkForm(Form):
 
     name = TextField('Network name',
                      [validators.Length(min=1, max=30,
-                                        message='From 1 to 30 characters.')])
+                                        message='From 1 to 30 characters.')],
+                     description='Display name.')
     ipaddress = TextField("Buoy's IP address", [validators.IPAddress(
-        message='IPv4 address.'), validators.Required()])
+        message='IPv4 address.'), validators.Required()],
+        description='IP address of the buoy which will scan the network.')
     submit = SubmitField('Save')
 
 def get_network_options(user_id):
@@ -26,7 +28,8 @@ def get_network_options(user_id):
 class AddCALEntryForm(Form):
 
     mac = TextField('MAC address', [validators.MacAddress(),
-                                    validators.Required()])
+                                    validators.Required()],
+                    description='MAC address of the target host.')
     networks = SelectMultipleField('Select one or more networks')
     type = SelectField('Select the entry type',
                        choices=[('B', 'Black list'), ('W', 'White list')])
@@ -45,3 +48,18 @@ class AddCALEntryForm(Form):
         form = cls()
         form.networks.choices = get_network_options(user_id)
         return form
+
+class AddHostForm(Form):
+
+    name = TextField('Host name',
+                     [validators.Length(min=1, max=30,
+                                        message='From 1 to 30 characters.')],
+                     description='Display name.')
+   # mac = TextField('MAC address', [validators.MacAddress(),
+   #                                 validators.Required()])
+    services = TextField('Services to monitor',
+                         [validators.Length(min=1, max=300,
+                                            message='Max 300 characters.')],
+                         description="""Comma separated values.
+                         Please choose meaningful names like 'Firefox' and 'Nginx'.""")
+    submit = SubmitField('Save')
