@@ -106,15 +106,10 @@ function deleteNetwork(netId) {
  *********/
 
 function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
-    /*@brand-info:    #5bc0de;
-      @brand-warning: #f0ad4e;
-      @brand-danger:  #d9534f;
-    */
-    window.console.log(nweek);
-    window.console.log(nids);
-    window.console.log(nets);
-    
     var colors = {'R': '#d9534f', 'O': '#f0ad4e', 'B': '#5bc0de'};
+    var colors_high = {'R': '#e7908e', 'O': '#f6ce95', 'B': '#9bd8eb'};
+    var colors_rgb = {'R': 'rgba(217,83,79, ', 'O': 'rgba(240,173,78, ',
+                      'B': 'rgba(91,192,222, '};
     var labels = {'R': 'Alert', 'O': 'Warning', 'B': 'Info'};
     var event_types = ['R', 'O', 'B'];
     // Weekly events by type
@@ -122,7 +117,7 @@ function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
     for (var i = 0; i < event_types.length; i++) {
         data_tweek.push({value: tweek[event_types[i]],
                          color: colors[event_types[i]],
-                         highlight: colors[event_types[i]],
+                         highlight: colors_high[event_types[i]],
                          label: labels[event_types[i]]});
     }
     var tweek_context = document.getElementById('can-tweek').getContext('2d');
@@ -132,9 +127,17 @@ function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
     document.getElementById('tweek-legend').innerHTML = tweek_chart.generateLegend();
     document.getElementById('loading-tweek').style.display = "none";
     // Weekly events by network
-    var netcolors = {1: '#0C7367', 2: '#0C1873', 3: '#670C73', 4: '#18E2CB',
+    var netcolors = {1: '#0C7367', 2: '#0C1873', 3: '#670C73', 4: '#042d28',
                      5: '#12AB99', 6: '#AB1224', 7: '#E2182F', 8: '#340C73',
                      9: '#73340C', 0: '#73670C'};
+    var netcolors_high = {1: '#13b8a5', 2: '#1326b8', 3: '#a513b8', 4: '#0a7366',
+                          5: '#22e8d0', 6: '#c21429', 7: '#ed596a', 8: '#5313b8',
+                          9: '#b85313', 0: '#b8a513'};
+    var netcolors_rgb = {1: 'rgba(12,115,103,', 2: 'rgba(12,24,115,',
+                         3: 'rgba(103,12,115, ', 4: 'rgba(4,45,40, ',
+                         5: 'rgba(18,71,153, ', 6: 'rgba(171,18,36, ',
+                         7: 'rgba(226,24,47, ', 8: 'rgba(52,12,115, ',
+                         9: 'rgba(115,52,12, ', 0: 'rgba(115,103,12, '};
     var upTo = nids.length;
     if (nids.length > 10)
         upTo = 10;
@@ -142,38 +145,56 @@ function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
     for (var i = 0; i < upTo; i++) {
         data_nweek.push({value: nweek[nids[i]],
                          color: netcolors[i],
-                         highlight: netcolors[i],
+                         highlight: netcolors_high[i],
                          label: nets[nids[i]]});
     }
     var nweek_context = document.getElementById('can-nweek').getContext('2d');
     var nweek_chart = new Chart(nweek_context).Doughnut(data_nweek, options);
     document.getElementById('nweek-legend').innerHTML = nweek_chart.generateLegend();
     document.getElementById('loading-nweek').style.display = "none";
-    // Daily events by type
+    // Daily events by type (Bar + Line chart)
     var optionsLine = {legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"};
-    var data_tday = { labels: days, datasets: []};
-    var temp_tday = {};
+    var data_tday_bar = { labels: days, datasets: []};
+    var data_tday_line = { labels: days, datasets: []};
+    var temp_tday_bar = {};
+    var temp_tday_line = {};
     for (var i = 0; i < event_types.length; i++) {
-        temp_tday[event_types[i]] = {label: labels[event_types[i]],
-                                     fillColor: colors[event_types[i]],
-                                     strokeColor: colors[event_types[i]],
-                                     pointColor: colors[event_types[i]],
-                                     pointStrokeColor: "#fff",
-                                     pointHighlightFill: "#fff",
-                                     pointHighlightStroke: colors[event_types[i]],
-                                     data: []};
+        temp_tday_bar[event_types[i]] = {label: labels[event_types[i]],
+                                         fillColor: colors_rgb[event_types[i]] + "0.7)",
+                                         strokeColor: colors[event_types[i]],
+                                         pointColor: colors[event_types[i]],
+                                         pointStrokeColor: "#fff",
+                                         pointHighlightFill: "#fff",
+                                         pointHighlightStroke: colors[event_types[i]],
+                                         data: []};
+        temp_tday_line[event_types[i]] = {label: labels[event_types[i]],
+                                          fillColor: colors_rgb[event_types[i]] + "0.2)",
+                                          strokeColor: colors[event_types[i]],
+                                          pointColor: colors[event_types[i]],
+                                          pointStrokeColor: "#fff",
+                                          pointHighlightFill: "#fff",
+                                          pointHighlightStroke: colors[event_types[i]],
+                                          data: []};
     }
-    window.console.log(tday);
     for (var i = 0; i < days.length; i++) {
         for (var j = 0; j < event_types.length; j++) {
-            temp_tday[event_types[j]].data.push(tday[days[i]][event_types[j]]);
+            temp_tday_bar[event_types[j]].data.push(tday[days[i]][event_types[j]]);
+            temp_tday_line[event_types[j]].data.push(tday[days[i]][event_types[j]]);
         }
     }
-    data_tday.datasets.push(temp_tday);
-    var tday_context = document.getElementById('can-tday').getContext('2d');
-    var tday_chart = new Chart(tday_context).Line(data_tday, optionsLine);
-    document.getElementById('loading-tday').style.display = "none";
-    
+    for (var i = 0; i < event_types.length; i++) {
+        data_tday_bar.datasets.push(temp_tday_bar[event_types[i]]);
+        data_tday_line.datasets.push(temp_tday_line[event_types[i]]);
+    }
+    // Bar
+    var tdaybar_context = document.getElementById('can-tday-bar').getContext('2d');
+    var tdaybar_chart = new Chart(tdaybar_context).Bar(data_tday_bar, optionsLine);
+    document.getElementById('loading-tday-bar').style.display = "none";
+    // Line
+    var tdayline_context = document.getElementById('can-tday-line').getContext('2d');
+    var tdayline_chart = new Chart(tdayline_context).Line(data_tday_line, optionsLine);
+    document.getElementById('loading-tday-line').style.display = "none";
+
 }
 
 function getStats() {

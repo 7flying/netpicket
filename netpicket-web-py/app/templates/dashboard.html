@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import  "bootstrap/wtf.html" as wtf %}
 
-{% block nexttoicon %}<strong>Netpicket</strong> - <small>{{current_user.email}}</small>{% endblock %}
+{% block nexttoicon %}Netpicket - <small>{{current_user.email}}</small>{% endblock %}
 
 {% block page_content %}
 <div class="container">
@@ -101,7 +101,7 @@
     </small></h4>
     <br>
     <dl class="dl-horizontal" id="timeline-updates">
-      {% if events.keys()|length > 0 %}
+      {% if events.keys()|length != 0 %}
       {% for date in events.keys()|sort(reverse=True) %}
       <dt id="{{date}}">{{events[date][0]['day']}}</dt>
       <dd id="{{date ~ '-dd'}}">
@@ -122,7 +122,8 @@
                 {{even['desc']}}
               </td>
               <td><a href="{{url_for('dashboard',
-                     section='networks', id='default')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
+                     section='networks',
+                     id='default')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
             </tr>
             {% endfor %}
           <tbody>
@@ -537,18 +538,29 @@
     <h4>Daily statistics</h4>
   </div>
   <div class="col-md-6">
-    <h5>Event types by day</h5>
+    <h5>Event types by day - Bar chart</h5>
     <div id="ned-comp" class="alert alert-info" role="alert"
          style="display: none">
       <strong>Ups!</strong> We haven't events to show the distribution.
     </div>
-    <div id="loading-tday">
+    <div id="loading-tday-bar">
       <i class="fa fa-2x fa-spinner fa-pulse"></i>
     </div>
-    <div class="col-md-4 chart-legend" id="tday-legend">
+    <div class="col-md-6">
+      <canvas id="can-tday-bar" width="400" height="250"></canvas>
+    </div>  
+  </div>
+  <div class="col-md-6">
+    <h5>Event types by day - Line chart</h5>
+    <div id="ned-comp" class="alert alert-info" role="alert"
+         style="display: none">
+      <strong>Ups!</strong> We haven't events to show the distribution.
     </div>
-    <div class="col-md-2">
-      <canvas id="can-tday" width="250" height="250"></canvas>
+    <div id="loading-tday-line">
+      <i class="fa fa-2x fa-spinner fa-pulse"></i>
+    </div>
+    <div class="col-md-6">
+      <canvas id="can-tday-line" width="400" height="250"></canvas>
     </div>  
   </div>
   {% endif %}

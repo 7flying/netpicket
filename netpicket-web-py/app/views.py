@@ -130,7 +130,6 @@ def dashboard(section, id):
                 print " [INFO] entry form NACK"
                 entryneterror = len(networks) == 0
                 entryerrors = True
-        print " [INFO] RETURNING POST"
         return render_template('dashboard.html', section=section,
                                events=events, lastkey=lastkey,
                                alerts=alerts, nets=networks, acls=acls,
