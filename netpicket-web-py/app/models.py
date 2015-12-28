@@ -145,7 +145,7 @@ _ATTR_EVENT_PRIO = 'priority'
 _ATTR_EVENT_NET = 'netid'
 
 _KEY_EVENTS_USER_DATE = 'event-user-day:user:{0}:day:{1}'
-_KEY_EVENTS_USER_NET = 'event-user-network:user{0}:network:{1}'
+_KEY_EVENTS_USER_NET = 'event-user-network:user:{0}:network:{1}'
 
 def _get_key_event():
     """Returns an str with the next alert key id."""
@@ -233,7 +233,7 @@ _KEY_ENTRY_USER = 'entry:{0}:user:{1}'
 _ATTR_ENTRY_TYPE = 'type'
 _ATTR_ENTRY_HOST = 'host'
 _ATTR_ENTRY_MAC = 'mac'
-_ATTR_ENTRY_ADDR = 'address'
+_ATTR_ENTRY_ADDR = 'addres'
 
 _KEY_ENTRY_LIST_NETS = 'entry:{0}:list-nets'
 _KEY_ENTRY_BLACK_USER = 'black:user:{0}'
@@ -308,3 +308,73 @@ def get_entries(typ, user_id):
             if tmp is not None:
                 ret.append(tmp)
     return ret
+
+# --- Hosts --- #
+# Hosts are stored in hashes, which hold the host's name and a reference to
+# the list of services a host has.
+# We also have a set of service -> hosts (ids) with such service
+# Each user has a set of hosts (ids)
+# We have a set with all the known service names
+_KEY_HOST_ID = 'host-id-auto:'
+_KEY_HOST = 'host:{0}'
+_ATTR_HOST_NAME = 'name'
+_KEY_HOST_SET_SERVS = 'host-servs:host:{0}'
+_KEY_SERVNAME_HOSTS = 'serv-hosts:serv:{0}'
+_KEY_USER_HOSTS = 'user-hosts:user:{0}'
+_KEY_SERVS = 'servs-set:'
+
+def _get_key_host():
+    """Returns a str with the next host id."""
+    return str(red.incr(_KEY_HOST_ID))
+
+def get_services():
+    """Returns the set of known services."""
+    return red.smembers(_KEY_SERVS)
+
+def set_host(user_id, hostname, servs):
+    """Saves a host"""
+    key = _get_key_host()
+    user_id = str(user_id)
+    pip = red.pipeline()
+    pip.sadd(_KEY_USER_HOSTS.format(user_id), key)
+    pip.hset(_KEY_HOST.format(key), _ATTR_HOST_NAME, hostname)
+    for serv in servs:
+        pip.sadd(_KEY_HOST_SET_SERVS.format(key), serv)
+        pip.sadd(_KEY_SERVNAME_HOSTS.format(serv), key)
+        pip.sadd(_KEY_SERVS, serv)
+    pip.execute()
+
+def get_host(host_id):
+    """Returs a host."""
+    host_id = str(host_id)
+    temp = red.hgetall(_KEY_HOST.format(host_id))
+    if temp is not None:
+        temp['id'] = host_id
+        servs = red.smembers(_KEY_HOST_SET_SERVS.format(host_id))
+        temp['services'] = servs
+    return temp
+
+def get_user_hosts(user_id):
+    """Returns the hosts of a user"""
+    hosts = red.smembers(_KEY_USER_HOSTS.format(str(user_id)))
+    ret = []
+    for host in hosts:
+        ret.append(get_host(host))
+    return ret
+
+def delete_host(user_id, host_id):
+    """Deletes a host"""
+    user_id = str(user_id)
+    host_id = str(host_id)
+    pip = red.pipeline()
+    pip.srem(_KEY_USER_HOSTS.format(user_id), host_id)
+    pip.delete(_KEY_HOST.format(host_id))
+    servs = red.smembers(_KEY_HOST_SET_SERVS.format(host_id))
+    for serv in servs:
+        if red.scard(_KEY_SERVNAME_HOSTS.format(serv)) == 1:
+            pip.delete(_KEY_SERVNAME_HOSTS.format(serv))
+            pip.srem(_KEY_SERVS, serv)
+        else:
+            pip.srem(_KEY_SERVNAME_HOSTS.format(serv), host_id)
+    red.delete(_KEY_HOST_SET_SERVS.format(host_id))
+    pip.execute()
