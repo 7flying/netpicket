@@ -3,8 +3,9 @@
 This module holds the views of the app.
 """
 
-import datetime, random, string, gevent
-import const, config
+import datetime, random, string, gevent, urllib
+import config
+import json as pyjson
 
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
@@ -15,7 +16,7 @@ from app import app, db, red, login_manager
 from app.auth import OAuthSignIn
 from app.forms import AddNetworkForm, AddCALEntryForm
 import app.models as models
-
+import app.const as const
 
 @app.route('/')
 def main_page():
@@ -71,7 +72,11 @@ def dashboard(section, id):
                 events[date.strftime(const.STRTIME_DATE)] = tempevents
         lastkey = now.strftime(const.STRTIME_DATE)
     elif section == const.SEC_ALERTS:
-        pass
+        alerts = check_cves()
+        if alerts['status'] == 400:
+            alerts = None
+        else:
+            alerts = alerts['data']
     elif section == const.SEC_NETWORKS:
         networks = models.get_user_networks(current_user.id)
     elif section == const.SEC_ACLS:
@@ -88,7 +93,7 @@ def dashboard(section, id):
         return abort(404)
     if request.method == 'GET':
         return render_template('dashboard.html', section=section, events=events,
-                               lastkey=lastkey, alerts=alerts, nets=networks,
+                               lastkey=lastkey, cves=alerts, nets=networks,
                                acls=acls, canacl=can_acl, scans=scans,
                                stats=stats,
                                faddnet=AddNetworkForm(prefix='add-net-f'),
@@ -132,7 +137,7 @@ def dashboard(section, id):
                 entryerrors = True
         return render_template('dashboard.html', section=section,
                                events=events, lastkey=lastkey,
-                               alerts=alerts, nets=networks, acls=acls,
+                               cves=alerts, nets=networks, acls=acls,
                                canacl=can_acl, scans=scans, stats=stats,
                                faddnet=faddnet, neterrors=neterrors,
                                faddentry=faddentry, entryerrors=entryerrors,
@@ -144,7 +149,7 @@ def dashboard(section, id):
                 models.delete_network(current_user.id, id)
                 networks = models.get_user_networks(current_user.id)
         return render_template('dashboard.html', section=section, events=events,
-                               lastkey=lastkey, alerts=alerts, nets=networks,
+                               lastkey=lastkey, cves=alerts, nets=networks,
                                acls=acls, canacl=can_acl, scans=scans,
                                stats=stats,
                                faddnet=AddNetworkForm(prefix='add-net-f'),
@@ -216,7 +221,8 @@ def timeline_event_stream(user_id):
 def timeline():
     """Subscribe/receive timeline events."""
     print " [INFO] timeline"
-    return Response(timeline_event_stream(current_user.id), mimetype='text/event-stream')
+    return Response(timeline_event_stream(current_user.id),
+                    mimetype='text/event-stream')
 
 @app.route('/checkstats')
 @login_required
@@ -254,10 +260,17 @@ def check_stats():
                 type_count_week[event['priority']] += 1
                 net_count_day[day_str][event['net'][0]] += 1
                 net_count_week[event['net'][0]] += 1
-    print {'status': 200, 'days' : order, 'nets' : net_idname,
-                    'type_day': type_count_day, 'type_week': type_count_week,
-                    'net_day': net_count_day, 'net_week': net_count_week}
     return jsonify({'status': 200, 'days' : order, 'nets' : net_idname,
                     'net_ids': net_ids, 'type_day': type_count_day,
                     'type_week': type_count_week, 'net_day': net_count_day,
                     'net_week': net_count_week})
+
+def check_cves():
+    status = 200
+    response = urllib.urlopen(const.CVE_API)
+    data = json.loads(response.read())
+    if data is None:
+        status = 400
+    if status == 400:
+        return {'status' : status}
+    return {'status' : status, 'data' : data}

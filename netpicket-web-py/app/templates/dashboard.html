@@ -31,10 +31,10 @@
         {% endif %}
         >
       <a href="{{url_for('dashboard', section='alerts', id='default')}}"
-         rel="tooltip" title="Detailed info of your timeline events"
+         rel="tooltip" title="Latest CVEs"
          data-placement="bottom">
         <span><i class="fa fa-exclamation-circle"></i></span>
-        Alerts</a>
+        CVE Alerts</a>
     </li>
     <li role="presentation"
         {% if section == 'networks' %}
@@ -122,8 +122,8 @@
                 {{even['desc']}}
               </td>
               <td><a href="{{url_for('dashboard',
-                     section='networks',
-                     id='default')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
+                           section='networks',
+                           id='default')}}#net-{{even['net'][0]}}">{{even['net'][1]}}</a></td>
             </tr>
             {% endfor %}
           <tbody>
@@ -137,8 +137,9 @@
     
     {% elif section == 'networks' %}
     <br>
+    
+    {% if neterrors %}
     <div class="col-md-12">
-      {% if neterrors %}
       <div id="neterrors" class="alert alert-danger" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign"
               aria-hidden="true"></span>
@@ -146,16 +147,23 @@
         <strong>Hey!</strong>
         Invalid or empty fields on form.
       </div>
-      {% endif %}
+    </div>
+    {% endif %}  
+    
+    <div class="col-md-6">
+      <h4>My networks</h4>
+    </div>
+    <div class="col-md-6">
       <button id="button-add-net"
-              type="button" class="button-icon-collapse btn btn-primary"
+              type="button" class="pull-right button-icon-collapse btn btn-primary"
               data-toggle="collapse"
               data-target="#collapse-add-net" aria-expanded="false"
               aria-controls="collapse-add-net">
         <span id="icon-collapse-pa" class="fa fa-plus-square"
               aria-hidden="true"></span> Add network
-      </button>  
+      </button>
     </div>
+    <br>
     <!-- collapse add net-->
     <div class="collapse col-md-8" id="collapse-add-net">
       <br>
@@ -165,11 +173,8 @@
       </div>
     </div>
     <!-- end  add net-->
-    <div class="col-md-12">
-      <h4>My networks</h4>
-    </div>
-    {% if nets|length == 0 %}
     <br>
+    {% if nets|length == 0 %}
     <div class="col-md-12">
       <div class="alert alert-info" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign"
@@ -180,7 +185,7 @@
       </div>
     </div>
     {% else %}
-    <hr>
+    <br>
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="panel-group" id="accordion-nets" role="tablist"
            aria-multiselectable="true">
@@ -260,323 +265,367 @@
       <br>
     </div>
     {% endif %}
-    
     {% elif section == 'alerts' %}
-    <div class="col-md-12">
-      <br>
-      <div class="panel panel-danger">
-        <div class="panel-heading"><i class="fa fa-warning"></i>
-          <strong>Unknown host detected</strong>
-        </div>
-        <div class="panel-body">
-          <div class="col-md-6">
-            <div class="table-responsive">
-              <table class="table">
-                <tbody>
-                  <tr><td><strong>Hostname</strong></td><td>H4x0r</td></tr>
-                  <tr><td><strong>IP</strong></td><td>192.168.1.25</td></tr>
-                  <tr><td><strong>MAC</strong></td><td>00:0a:95:9d:68:16</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="col-md-6">
-            
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-12">
-      <div class="panel panel-warning">
-        <div class="panel-heading"><i class="fa fa-exclamation-circle"></i>
-          <strong>Vulnerable host</strong>
-        </div>
-        <div class="panel-body">
-          <div class="col-md-6">
-            <div class="table-responsive">
-              <table class="table">
-                <tbody>
-                  <tr><td><strong>Hostname</strong></td><td>XPS</td></tr>
-                  <tr><td><strong>IP</strong></td><td>192.168.1.36</td></tr>
-                  <tr><td><strong>MAC</strong></td><td>0b:0a:95:9d:68:14</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <a
-               href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-100001">
-              CVE-2014-100001</a> Remote code injection.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% elif section == 'wblists' %}
-  <br>
-  <div class="col-md-12">
-    {% if entryerrors %}
-    <div id="entryerrors" class="alert alert-danger" role="alert">
-      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-      <span class="sr-only">Invalid or empty fields on form.</span><strong>Hey!</strong>
-      Invalid or empty fields on form.
-    </div>
-    {% endif %}
-    <button id="button-add-entry"
-            type="button" class="button-icon-collapse btn btn-primary" data-toggle="collapse"
-            data-target="#collapse-add-entry" aria-expanded="false"
-            aria-controls="collapse-add-entry">
-      <span id="icon-collapse-pa" class="fa fa-plus-square"
-            aria-hidden="true"></span> New list entry
-    </button>  
-  </div>
-  <!-- collapse add entry-->
-  <div class="collapse col-md-8" id="collapse-add-entry">
     <br>
-    {% if canacl %}
-    <div class="well clearfix">
-      <h4><i class="fa fa-list"></i> Add entry</h4>
-      <form class="form" role="form" method="post">
-        {% if inconsistent %}
-        <div class="alert alert-danger" role="alert">
-          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-          <span class="sr-only">You need to add a network</span><strong>Error!</strong>
-          This entry is inconsistent with the previous rules. Please revise it.
-        </div>
-        {% endif %}
-        {{wtf.form_field(faddentry.mac)}}
-        <div class="form-group">
-          <label class="control-label" for="add-entry-f-networks">
-            Select the list type
-          </label>
-          {{faddentry.type(class_="form-control selectpicker")}}
-        </div>
-        <div {% if entryneterror %}
-             class="form-group has-error" {% else %} class="form-group" {% endif %}>
-          <label for="add-entry-f-networks"
-                 {% if entryneterror %}
-                 class="control-label text-danger"
-                 {% else %}
-                 class="control-label"
-                 {% endif %}
-                 >
-            Select one or more networks
-          </label>
-          {{faddentry.networks(class_="form-control selectpicker")}}
-        </div>
-        {{faddentry.submit(class_="btn btn-default ")}}
-      </form>
+    <div class="col-md-12">
+      <h4>Hosts' status</h4>
+    </div>
+    <div class="col-md-12">
+      <div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only"></span><strong>Ups! </strong>
+        You aren't monitoring vulnerabilities from any host. Please add one.
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <td><strong>Host</strong></td>
+              <td><strong>MAC</strong></td>
+              <td><strong>Services</strong></td>
+              <td><strong>Status</strong></td> 
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Even</td>
+              <td>fefe:fe:FAe:FEF:EA</td>
+              <td>
+                <table>
+                  <tbody>
+                    <tr class="success"><td>MySQL</td></tr>
+                    <tr><td>MySQL</td></tr>
+                  </tbody>
+                </table>
+              <td>
+                <table>
+                  <tbody>
+                    <tr><td class="text-success"><i class="fa fa-shield"></i> Secure</td></tr>
+                    <tr><td class="text-danger"><i class="fa fa-warning"></i> Vulnerable</td></tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <h4>Latest CVE details</h4>
+    </div>
+    {% if cves is none or cves|length == 0 %}
+    <div class="col-md-12">
+      <div class="alert alert-warning" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only"></span><strong>Ups! </strong>
+        We couldn't retrieve the latest CVEs, please try again later.
+      </div>
     </div>
     {% else %}
-    <div class="alert alert-warning" role="alert">
-      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-      <span class="sr-only">You need to add a network</span><strong>Hold on!</strong>
-      You need to
-      <a href="{{url_for('dashboard', section='networks', id='default')}}">add a network</a>
-      before creating an W/B list entry.
-    </div>
-    {% endif %}
+    <div class="col-md-12">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <td><strong>CVE ID</strong></td>
+              <td><strong>CVSS score</strong></td>
+              <td><strong>Summary</strong></td>
+              <td><strong>Exploit count</strong></td>
+              <td><strong>Publish date</strong></td>
+              <td><strong>Update date</strong></td>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cve in cves %}
+            <tr {% if cve['cvss_score']|float <= 3.9 %} class="success"
+                                                 {% elif cve['cvss_score']|float <= 6.9 %} class="warning"
+                                                                                    {% else %} class="danger" {% endif %}>
+                                                 <td><strong><a target="_blank"
+                                                                href="{{cve['url']}}">{{cve['cve_id']}}</a></strong>
+                                                 </td>
+                                                 <td>{{cve['cvss_score']}}</td>
+                                                 <td>{{cve['summary']}}</td>
+                                                 <td>{{cve['exploit_count']}}</td>
+                                                 <td>{{cve['publish_date']}}</td>
+                                                 <td>{{cve['update_date']}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endif %}
+<!-- --->
+{% elif section == 'wblists' %}
+<br>
+
+{% if entryerrors %}
+<div class="col-md-12">
+  <div id="entryerrors" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Invalid or empty fields on form.</span><strong>Hey!</strong>
+    Invalid or empty fields on form.
   </div>
-  <hr>
-  <!-- end  add entry-->
-  <div class="col-md-12">
-    <h4>My white &amp; black lists</h4>
-  </div>
-  <!-- white list -->
-  {% if acls is none or acls.keys()|length == 0 or acls['W']|length == 0 %}
-  <div class="col-md-12">
-    <div class="alert alert-info" role="alert">
-      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-      <span class="sr-only">Hey! You don't have white lists</span><strong>Empty! </strong>
-      Your white list is empty, please add an entry.
-    </div>
+</div>
+{% endif %} 
+<div class="col-md-6">
+  <h4>My white &amp; black lists</h4>
+</div>
+<div class="col-md-6">
+  <button id="button-add-entry"
+          type="button" class="pull-right button-icon-collapse btn btn-primary" data-toggle="collapse"
+          data-target="#collapse-add-entry" aria-expanded="false"
+          aria-controls="collapse-add-entry">
+    <span id="icon-collapse-pa" class="fa fa-plus-square"
+          aria-hidden="true"></span> New list entry
+  </button> 
+</div>
+<!-- collapse add entry-->
+<div class="collapse col-md-8" id="collapse-add-entry">
+  <br>
+  {% if canacl %}
+  <div class="well clearfix">
+    <h4><i class="fa fa-list"></i> Add entry</h4>
+    <form class="form" role="form" method="post">
+      {% if inconsistent %}
+      <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only">You need to add a network</span><strong>Error!</strong>
+        This entry is inconsistent with the previous rules. Please revise it.
+      </div>
+      {% endif %}
+      {{wtf.form_field(faddentry.mac)}}
+      <div class="form-group">
+        <label class="control-label" for="add-entry-f-networks">
+          Select the list type
+        </label>
+        {{faddentry.type(class_="form-control selectpicker")}}
+      </div>
+      <div {% if entryneterror %}
+           class="form-group has-error" {% else %} class="form-group" {% endif %}>
+        <label for="add-entry-f-networks"
+               {% if entryneterror %}
+               class="control-label text-danger"
+               {% else %}
+               class="control-label"
+               {% endif %}
+               >
+          Select one or more networks
+        </label>
+        {{faddentry.networks(class_="form-control selectpicker")}}
+      </div>
+      {{faddentry.submit(class_="btn btn-default ")}}
+    </form>
   </div>
   {% else %}
-  <div class="col-md-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <span><i class="fa fa-file-text-o"></i></span>
-        <strong>White list</strong>
-      </div>
-      <div class="panel-body">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <td><strong>Hostname</strong></td>
-                <td><strong>MAC</strong></td>
-                <td><strong>Address</strong></td>
-                <td><strong>Network/s</strong></td>
-                <td></td>
-              </tr>
-            </thead>
-            <tbody>
-              {% if acls['W']|length == 0 %}
-              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-              {% else %}
-              {% for entry in acls['W'] %}
-              <tr>
-                <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
-                <td>{{entry['mac']}}</td>
-                <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
-                <td><ul class="list-inline">
-                    {% for id, name in entry['nets'] %} 
-                    <li><a href="{{url_for('dashboard',
-                           section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
-                    {% endfor %}
-                </ul></td>
-                <td><button class="btn btn-default btn-sm" type="button">
-                    <span class="fa fa-edit"></span> Edit
-                  </button> <button class="btn btn-default btn-sm" type="button">
-                    <span class="fa fa-remove"></span> Delete
-                </button></td>
-              </tr>
-              {% endfor %}
-              {% endif %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div><!-- default -->
-  </div><!-- col-md- 12 -->
-  {% endif %}
-  <!-- end white list -->
-  <!-- black list -->
-  {% if acls is none or acls.keys()|length == 0 or acls['B']|length == 0 %}
-  <div class="col-md-12">
-    <div class="alert alert-info" role="alert">
-      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-      <span class="sr-only">Hey! You don't have black lists</span><strong>Empty!</strong>
-      Your black list is empty, please add an entry.
-    </div>
-  </div>
-  {% else %}
-  <div class="col-md-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <span><i class="fa fa-file-text"></i></span>
-        <strong>Black list</strong>
-      </div>
-      <div class="panel-body">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <td><strong>Hostname</strong></td>
-                <td><strong>MAC</strong></td>
-                <td><strong>Address</strong></td>
-                <td><strong>Network/s</strong></td>
-                <td></td>
-            </thead>
-            <tbody>
-              {% if acls['B']|length == 0 %}
-              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-              {% else %}
-              {% for entry in acls['B'] %}
-              <tr>
-                <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
-                <td>{{entry['mac']}}</td>
-                <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
-                <td><ul class="list-inline">
-                    {% for id, name in entry['nets'] %} 
-                    <li><a href="{{url_for('dashboard',
-                           section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
-                    {% endfor %}
-                </ul></td>
-                <td><button class="btn btn-default btn-sm" type="button">
-                    <span class="fa fa-edit"></span> Edit
-                  </button> <button class="btn btn-default btn-sm" type="button">
-                    <span class="fa fa-remove"></span> Delete
-                </button></td>
-              </tr>
-              {% endfor %}
-              {% endif %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div><!-- default -->
-  </div><!-- col-md- 12 -->
-  {% endif %}
-  <!-- end black list -->
-  {% elif section == 'scans' %}
-  {% elif section == 'stats' %}
-  <div class="col-md-12">
-    <h4>Weekly statistics</h4>
-  </div>
-  <div class="col-md-6">
-    <h5>Events by type</h5>
-    <div id="ned-comp" class="alert alert-info" role="alert"
-         style="display: none">
-      <strong>Ups!</strong> We haven't events to show the type distribution.
-    </div>
-    <div id="loading-tweek">
-      <i class="fa fa-2x fa-spinner fa-pulse"></i>
-    </div>
-    <div class="col-md-4 chart-legend" id="tweek-legend">
-    </div>
-    <div class="col-md-2">
-      <canvas id="can-tweek" width="250" height="250"></canvas>
-    </div>  
-  </div>
-  <div class="col-md-6">
-    <h5>Events by network</h5>
-    <div id="ned-comp" class="alert alert-info" role="alert"
-         style="display: none">
-      <strong>Ups!</strong> We haven't events to show the distribution.
-    </div>
-    <div id="loading-nweek">
-      <i class="fa fa-2x fa-spinner fa-pulse"></i>
-    </div>
-    <div class="col-md-4 chart-legend" id="nweek-legend">
-    </div>
-    <div class="col-md-2">
-      <canvas id="can-nweek" width="250" height="250"></canvas>
-    </div>  
-  </div>
-  <div class="col-md-12">
-    <h4>Daily statistics</h4>
-  </div>
-  <div class="col-md-6">
-    <h5>Event types by day - Bar chart</h5>
-    <div id="ned-comp" class="alert alert-info" role="alert"
-         style="display: none">
-      <strong>Ups!</strong> We haven't events to show the distribution.
-    </div>
-    <div id="loading-tday-bar">
-      <i class="fa fa-2x fa-spinner fa-pulse"></i>
-    </div>
-    <div class="col-md-6">
-      <canvas id="can-tday-bar" width="425" height="250"></canvas>
-    </div>  
-  </div>
-  <div class="col-md-6">
-    <h5>Event types by day - Line chart</h5>
-    <div id="ned-comp" class="alert alert-info" role="alert"
-         style="display: none">
-      <strong>Ups!</strong> We haven't events to show the distribution.
-    </div>
-    <div id="loading-tday-line">
-      <i class="fa fa-2x fa-spinner fa-pulse"></i>
-    </div>
-    <div class="col-md-6">
-      <canvas id="can-tday-line" width="425" height="250"></canvas>
-    </div>  
-  </div>
-  <div class="col-md-12">
-    <h5>Events by network</h5>
-    <div id="ned-comp" class="alert alert-info" role="alert"
-         style="display: none">
-      <strong>Ups!</strong> We haven't events to show the distribution.
-    </div>
-    <div id="loading-nday">
-      <i class="fa fa-2x fa-spinner fa-pulse"></i>
-    </div>
-    <div class="col-md-6">
-      <canvas id="can-nday" width="850" height="250"></canvas>
-    </div>  
+  <div class="alert alert-warning" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">You need to add a network</span><strong>Hold on!</strong>
+    You need to
+    <a href="{{url_for('dashboard', section='networks', id='default')}}">add a network</a>
+    before creating an W/B list entry.
   </div>
   {% endif %}
+</div>
+<!-- end  add entry-->
+
+<!-- white list -->
+{% if acls is none or acls.keys()|length == 0 or acls['W']|length == 0 %}
+<div class="col-md-12">
+  <div class="alert alert-info" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Hey! You don't have white lists</span><strong>Empty! </strong>
+    Your white list is empty, please add an entry.
+  </div>
+</div>
+{% else %}
+<div class="col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <span><i class="fa fa-file-text-o"></i></span>
+      <strong>White list</strong>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <td><strong>Hostname</strong></td>
+              <td><strong>MAC</strong></td>
+              <td><strong>Address</strong></td>
+              <td><strong>Network/s</strong></td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            {% if acls['W']|length == 0 %}
+            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            {% else %}
+            {% for entry in acls['W'] %}
+            <tr>
+              <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
+              <td>{{entry['mac']}}</td>
+              <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
+              <td><ul class="list-inline">
+                  {% for id, name in entry['nets'] %} 
+                  <li><a href="{{url_for('dashboard',
+                               section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
+                  {% endfor %}
+              </ul></td>
+              <td><button class="btn btn-default btn-sm" type="button">
+                  <span class="fa fa-edit"></span> Edit
+                </button> <button class="btn btn-default btn-sm" type="button">
+                  <span class="fa fa-remove"></span> Delete
+              </button></td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- default -->
+</div><!-- col-md- 12 -->
+{% endif %}
+<!-- end white list -->
+<!-- black list -->
+{% if acls is none or acls.keys()|length == 0 or acls['B']|length == 0 %}
+<div class="col-md-12">
+  <div class="alert alert-info" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Hey! You don't have black lists</span><strong>Empty!</strong>
+    Your black list is empty, please add an entry.
+  </div>
+</div>
+{% else %}
+<div class="col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <span><i class="fa fa-file-text"></i></span>
+      <strong>Black list</strong>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <td><strong>Hostname</strong></td>
+              <td><strong>MAC</strong></td>
+              <td><strong>Address</strong></td>
+              <td><strong>Network/s</strong></td>
+              <td></td>
+          </thead>
+          <tbody>
+            {% if acls['B']|length == 0 %}
+            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            {% else %}
+            {% for entry in acls['B'] %}
+            <tr>
+              <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
+              <td>{{entry['mac']}}</td>
+              <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
+              <td><ul class="list-inline">
+                  {% for id, name in entry['nets'] %} 
+                  <li><a href="{{url_for('dashboard',
+                               section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
+                  {% endfor %}
+              </ul></td>
+              <td><button class="btn btn-default btn-sm" type="button">
+                  <span class="fa fa-edit"></span> Edit
+                </button> <button class="btn btn-default btn-sm" type="button">
+                  <span class="fa fa-remove"></span> Delete
+              </button></td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- default -->
+</div><!-- col-md- 12 -->
+{% endif %}
+<!-- end black list -->
+{% elif section == 'scans' %}
+{% elif section == 'stats' %}
+<div class="col-md-12">
+  <h4>Weekly statistics</h4>
+</div>
+<div class="col-md-6">
+  <h5>Events by type</h5>
+  <div id="ned-comp" class="alert alert-info" role="alert"
+       style="display: none">
+    <strong>Ups!</strong> We haven't events to show the type distribution.
+  </div>
+  <div id="loading-tweek">
+    <i class="fa fa-2x fa-spinner fa-pulse"></i>
+  </div>
+  <div class="col-md-4 chart-legend" id="tweek-legend">
+  </div>
+  <div class="col-md-2">
+    <canvas id="can-tweek" width="250" height="250"></canvas>
+  </div>  
+</div>
+<div class="col-md-6">
+  <h5>Events by network</h5>
+  <div id="ned-comp" class="alert alert-info" role="alert"
+       style="display: none">
+    <strong>Ups!</strong> We haven't events to show the distribution.
+  </div>
+  <div id="loading-nweek">
+    <i class="fa fa-2x fa-spinner fa-pulse"></i>
+  </div>
+  <div class="col-md-4 chart-legend" id="nweek-legend">
+  </div>
+  <div class="col-md-2">
+    <canvas id="can-nweek" width="250" height="250"></canvas>
+  </div>  
+</div>
+<div class="col-md-12">
+  <h4>Daily statistics</h4>
+</div>
+<div class="col-md-6">
+  <h5>Event types by day - Bar chart</h5>
+  <div id="ned-comp" class="alert alert-info" role="alert"
+       style="display: none">
+    <strong>Ups!</strong> We haven't events to show the distribution.
+  </div>
+  <div id="loading-tday-bar">
+    <i class="fa fa-2x fa-spinner fa-pulse"></i>
+  </div>
+  <div class="col-md-6">
+    <canvas id="can-tday-bar" width="425" height="250"></canvas>
+  </div>  
+</div>
+<div class="col-md-6">
+  <h5>Event types by day - Line chart</h5>
+  <div id="ned-comp" class="alert alert-info" role="alert"
+       style="display: none">
+    <strong>Ups!</strong> We haven't events to show the distribution.
+  </div>
+  <div id="loading-tday-line">
+    <i class="fa fa-2x fa-spinner fa-pulse"></i>
+  </div>
+  <div class="col-md-6">
+    <canvas id="can-tday-line" width="425" height="250"></canvas>
+  </div>  
+</div>
+<div class="col-md-12">
+  <h5>Events by network</h5>
+  <div id="ned-comp" class="alert alert-info" role="alert"
+       style="display: none">
+    <strong>Ups!</strong> We haven't events to show the distribution.
+  </div>
+  <div id="loading-nday">
+    <i class="fa fa-2x fa-spinner fa-pulse"></i>
+  </div>
+  <div class="col-md-6">
+    <canvas id="can-nday" width="850" height="250"></canvas>
+  </div>  
+</div>
+{% endif %}
 </div>
 </div>
 {% endblock %}
