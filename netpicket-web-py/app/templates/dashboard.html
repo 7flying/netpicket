@@ -134,7 +134,7 @@
     </dl>
     {% endif %}
     <!-- END TIMELINE -->
-    
+    <!-- NETWORKS -->
     {% elif section == 'networks' %}
     <br>
     {% if neterrors %}
@@ -187,7 +187,7 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="panel-group" id="accordion-nets" role="tablist"
            aria-multiselectable="true">
-        {% for net in nets %}
+        {% for net in nets|sort(attribute='name') %}
         <div class="panel panel-default" id={{'net-'~net['id']}}>
           <div class="panel-heading" role="tab" id="{{'net-'~net['id']~'tab'}}">
             <h4 class="panel-title">
@@ -263,11 +263,19 @@
       <br>
     </div>
     {% endif %}
+    <!-- END NETWORKS -->
+    <!-- ALERTS -->
     {% elif section == 'alerts' %}
     <br>
-    {% if hosterrors %}
+    {% if hosterrors or hostediterrors %}
     <div class="col-md-12">
-      <div id="hosterrors" class="alert alert-danger" role="alert">
+      <div
+         {% if hosterrors %}
+         id="hosterrors"
+         {% else %}
+         id="hostediterrors" data-host-error="{{hosterror}}"
+         {% endif %}
+           class="alert alert-danger" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign"
               aria-hidden="true"></span>
         <span class="sr-only">Invalid or empty fields on form.</span>
@@ -309,6 +317,63 @@
     </div>
     {% else %}
     <!-- end if no hosts -->
+    {% for host in hosts %}
+    <!-- modal to edit host -->
+    <div class="modal fade" id="{{'mod-edit-host-'~host['id']}}"
+         tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"
+                    aria-label="Close"><span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title"><i class="fa fa-laptop"></i> Edit host</h4>
+          </div>
+          <form class="form" role="form" method="post"
+                action="{{url_for('manage_host', hid=host['id'])}}">
+            <div class="modal-body">
+              <div
+                 {% if hostediterrors and hostediterrors['name'] %}
+                 class="form-group has-error"
+                 {% else %} class="form-group" {% endif %}
+                 >
+                <label class="control-label" for="edit-host-f-name">Host name</label>
+                <input id="edit-host-f-name" class="form-control" type="text"
+                       name="edit-host-f-name" value="{{host['name']}}"></input>
+                {% if hostediterrors and hostediterrors['name'] %}
+                <p class="help-block">From 1 to 30 characters<p>
+                  {% else %}<p class="help-block">Display name.</p>{% endif %}
+              </div>
+              <div
+                 {% if hostediterrors and hostediterrors['services'] %}
+                 class="form-group has-error"
+                 {% else %} class="form-group" {% endif %}
+                 >
+                <label class="control-label"
+                       for="edit-host-f-services">Services to monitor</label>
+                <input class="form-control" id="edit-host-f-services"
+                       name="edit-host-f-services" value="{{', '.join(host['services'])}}"
+                       type="text"></input>
+                {% if hostediterrors and hostediterrors['services'] %}
+                <p class="help-block">Max 300 characters.</p>
+                {% else %}
+                <p class="help-block">Comma separated values.
+                  Please choose meaningful names like 'Firefox' and 'Nginx'.</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default"
+                      data-dismiss="modal">Close</button>
+              <input id="edit-host-f-submit" type="submit"
+                     class="btn btn-primary" value="Save changes"></input>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    <!-- end modal to edit host -->
     <div class="col-md-12">
       <div class="table-responsive">
         <table class="table table-hover">
@@ -322,7 +387,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for host in hosts %}
+            {% for host in hosts|sort(attribute='name') %}
             <tr id="{{'host-'~host['id']}}">
               <td>{{host['name']}}</td>
               <td>
@@ -340,11 +405,11 @@
                     {% if vulns is none %}
                     <tr><td class="text-success"><i class="fa fa-shield"></i></td></tr>
                     {% else %}
-                      {% if vulns[serv] %}
-                      <tr><td class="text-danger"><i class="fa fa-warning"></i></td></tr>
-                      {% else %}
-                      <tr><td class="text-success"><i class="fa fa-shield"></i></td></tr>
-                      {% endif %}
+                    {% if vulns[serv] %}
+                    <tr><td class="text-danger"><i class="fa fa-warning"></i></td></tr>
+                    {% else %}
+                    <tr><td class="text-success"><i class="fa fa-shield"></i></td></tr>
+                    {% endif %}
                     {% endif %}
                     {% endfor %}
                   </tbody>
@@ -368,9 +433,12 @@
                   </tbody>
                 </table>
               <td>
-              {% endif %}
+                {% endif %}
               <td>
-                <button class="btn btn-default btn-sm" type="button">
+                <button id="{{'button-edit-host-'~host['id']}}"
+                        class="btn btn-default btn-sm" type="button"
+                        data-toggle="modal"
+                        data-target="{{'#mod-edit-host-'~host['id']}}">
                   <span class="fa fa-edit"></span> Edit</button>
                 <button class="btn btn-warning btn-sm" type="button"
                         onclick="deleteHost('{{host['id']}}');">
@@ -408,9 +476,9 @@
             </tr>
           </thead>
           <tbody>
-            {% for cve in cves %}
+            {% for cve in cves|sort(attribute='update_date', reverse=True) %}
             <tr id="{{cve['cve_id']}}"
-               {% if cve['cvss_score']|float <= 3.9 %} class="success"
+                {% if cve['cvss_score']|float <= 3.9 %} class="success"
                                                  {% elif cve['cvss_score']|float <= 6.9 %} class="warning"
                                                                                     {% else %} class="danger" {% endif %}>
                                                  <td><strong><a target="_blank"
@@ -535,7 +603,7 @@
             {% if acls['W']|length == 0 %}
             <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
             {% else %}
-            {% for entry in acls['W'] %}
+            {% for entry in acls['W']|sort(attribute='host') %}
             <tr>
               <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
               <td>{{entry['mac']}}</td>
@@ -548,7 +616,7 @@
               </ul></td>
               <td><button class="btn btn-default btn-sm" type="button">
                   <span class="fa fa-edit"></span> Edit
-                </button> <button class="btn btn-default btn-sm" type="button">
+                </button> <button class="btn btn-warning btn-sm" type="button">
                   <span class="fa fa-remove"></span> Delete
               </button></td>
             </tr>
@@ -593,7 +661,7 @@
             {% if acls['B']|length == 0 %}
             <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
             {% else %}
-            {% for entry in acls['B'] %}
+            {% for entry in acls['B']|sort(attribute='host') %}
             <tr>
               <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
               <td>{{entry['mac']}}</td>
@@ -606,7 +674,7 @@
               </ul></td>
               <td><button class="btn btn-default btn-sm" type="button">
                   <span class="fa fa-edit"></span> Edit
-                </button> <button class="btn btn-default btn-sm" type="button">
+                </button> <button class="btn btn-warning btn-sm" type="button">
                   <span class="fa fa-remove"></span> Delete
               </button></td>
             </tr>

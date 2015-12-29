@@ -331,6 +331,32 @@ def get_services():
     """Returns the set of known services."""
     return red.smembers(_KEY_SERVS)
 
+def edit_host(user_id, host_id, hostname, servs):
+    """Edits the given host."""
+    user_id = str(user_id)
+    host_id = str(host_id)
+    if host_id in red.smembers(_KEY_USER_HOSTS.format(user_id)):
+        pip = red.pipeline()
+        pip.hset(_KEY_HOST.format(host_id), _ATTR_HOST_NAME, hostname)
+        saved_servs = red.smembers(_KEY_HOST_SET_SERVS.format(host_id))
+        # Remove all
+        pip.delete(_KEY_HOST_SET_SERVS.format(host_id))
+        for serv in saved_servs:
+            if red.scard(_KEY_SERVNAME_HOSTS.format(serv)) == 1:
+                pip.delete(_KEY_SERVNAME_HOSTS.format(serv))
+                pip.srem(_KEY_SERVS, serv)
+            else:
+                pip.srem(_KEY_SERVNAME_HOSTS.format(serv), host_id)
+        # create new associated servs
+        for serv in servs:
+            pip.sadd(_KEY_HOST_SET_SERVS.format(host_id), serv)
+            pip.sadd(_KEY_SERVNAME_HOSTS.format(serv), host_id)
+            pip.sadd(_KEY_SERVS, serv)
+        pip.execute()
+        return (True, 'Everything went fine!')
+    else:
+        return (False, 'Unknown host for the given user.')
+
 def set_host(user_id, hostname, servs):
     """Saves a host"""
     key = _get_key_host()

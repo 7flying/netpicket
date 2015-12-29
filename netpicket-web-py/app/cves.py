@@ -2,7 +2,20 @@
 """
 Checks vulneravilities in the known hosts' services.
 """
+import urllib, json
+import app.const as const
 import app.models as models
+
+def check_cves():
+    """Checks the latest CVEs in cvedetails page."""
+    status = 200
+    response = urllib.urlopen(const.CVE_API)
+    data = json.loads(response.read())
+    if data is None:
+        status = 400
+    if status == 400:
+        return {'status' : status}
+    return {'status' : status, 'data' : data}
 
 def check_vulns(latest_cves):
     """Checks if the services in the db are vulnerable to the given CVEs."""

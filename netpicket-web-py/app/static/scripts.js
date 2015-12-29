@@ -89,6 +89,10 @@ function changeClassButtonIcon() {
     }
 }
 
+/***********
+ * Deletes *
+ ***********/
+ 
 function deleteNetwork(netId) {
     $.ajax({
         type: 'DELETE',
@@ -270,6 +274,14 @@ $(document).ready(function() {
     }
     if (document.getElementById('hosterrors') != null) {
         $("#button-add-host").click();
+    }
+    if (document.getElementById('hostediterrors') != null) {
+        var errorOn = $("#hostediterrors").attr('data-host-error');
+        if (errorOn != null) {
+            var text = "#button-edit-host-" + errorOn;
+            window.console.log(text);
+            $(text).click();
+        }
     }
     
     $("[rel='tooltip']").tooltip();

@@ -2,8 +2,7 @@
 """
 This module holds the views of the app.
 """
-
-import datetime, random, string, gevent, urllib
+import datetime, random, string, gevent
 import config
 
 from flask.ext.login import login_user, logout_user, current_user,\
@@ -51,6 +50,18 @@ def callback(provider):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
+def _get_sec_alerts():
+    """Helper that retrieves the things needed in the alerts tab."""
+    vulns = None
+    alerts = cves.check_cves()
+    if alerts['status'] == 400:
+        alerts = None
+    else:
+        alerts = alerts['data']
+        vulns = cves.check_vulns(alerts)
+    hosts = models.get_user_hosts(current_user.id)
+    return (alerts, hosts, vulns)
+
 @app.route('/dashboard/', defaults={'section': 'timeline', 'id': ''},
            methods=['GET', 'POST', 'DELETE'])
 @app.route('/dashboard/<section>/<id>', methods=['GET', 'POST', 'DELETE'])
@@ -72,13 +83,7 @@ def dashboard(section, id):
                 events[date.strftime(const.STRTIME_DATE)] = tempevents
         lastkey = now.strftime(const.STRTIME_DATE)
     elif section == const.SEC_ALERTS:
-        alerts = check_cves()
-        if alerts['status'] == 400:
-            alerts = None
-        else:
-            alerts = alerts['data']
-            vulns = cves.check_vulns(alerts)
-        hosts = models.get_user_hosts(current_user.id)
+        alerts, hosts, vulns = _get_sec_alerts()
     elif section == const.SEC_NETWORKS:
         networks = models.get_user_networks(current_user.id)
     elif section == const.SEC_ACLS:
@@ -178,23 +183,48 @@ def dashboard(section, id):
                                faddentry=AddCALEntryForm(
                                    prefix='add-entry-f').new(current_user.id))
 
-@app.route('/profile', methods=['GET'])
+@app.route('/host/<int:hid>', methods=['POST'])
 @login_required
-def profile():
-    """ """
-    return render_template('ok.html')
-
+def manage_host(hid):
+    """Edits a host."""
+    temp_servs = request.form.get('edit-host-f-services')
+    temp_name = request.form.get('edit-host-f-name')
+    hostediterrors = None
+    if temp_servs is None or (len(temp_servs) < 1 or len(temp_servs) > 300):
+        hostediterrors = {}
+        hostediterrors['services'] = True
+    if temp_name is None or (len(temp_name) < 1 or len(temp_name) > 30):
+        if hostediterrors is None:
+            hostediterrors = {}
+        hostediterrors['name'] = True
+    if hostediterrors is None:
+        servs = [x.strip() for x in
+                 request.form.get('edit-host-f-services').split(',')]
+        ret = models.edit_host(current_user.id, hid,
+                               request.form.get('edit-host-f-name'), servs)
+        if not ret[0]:
+            hostediterrors = dict(services=True, name=True)
+    if hostediterrors is None:
+        return redirect(url_for('dashboard', section=const.SEC_ALERTS,
+                                id='default'))
+    else:
+        alerts, hosts, vulns = _get_sec_alerts()
+        return render_template('dashboard.html', section=const.SEC_ALERTS,
+                               cves=alerts, hosts=hosts, vulns=vulns,
+                               hostediterrors=hostediterrors, hosterror=hid,
+                               faddhost=AddHostForm(prefix='add-host-f'))
 @login_manager.user_loader
 def load_user(id):
     return models.User.query.get(int(id))
 
+"""
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Logs the user in the application."""
+   #Logs the user in the application.
     if g.user is not None and g.user.is_authenticated():
         return redirect(url_for('profile'))
     return render_template('login.html', title='Sign In')
-
+"""
 @app.route('/logout')
 @login_required
 def logout():
@@ -287,12 +317,3 @@ def check_stats():
                     'type_week': type_count_week, 'net_day': net_count_day,
                     'net_week': net_count_week})
 
-def check_cves():
-    status = 200
-    response = urllib.urlopen(const.CVE_API)
-    data = json.loads(response.read())
-    if data is None:
-        status = 400
-    if status == 400:
-        return {'status' : status}
-    return {'status' : status, 'data' : data}
