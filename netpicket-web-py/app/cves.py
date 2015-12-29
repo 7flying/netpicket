@@ -2,7 +2,6 @@
 """
 Checks vulneravilities in the known hosts' services.
 """
-import re
 import app.models as models
 
 def check_vulns(latest_cves):
@@ -11,7 +10,7 @@ def check_vulns(latest_cves):
     vulns = dict(zip(services, [False for _ in services]))
     for serv in services:
         for cve in latest_cves:
-            if re.match(serv.lower(), cve['summary'].lower(), re.IGNORECASE):
+            if serv.lower() in cve['summary'].lower():
                 if not vulns[serv]:
                     vulns[serv] = []
                 vulns[serv].append(cve['cve_id'])

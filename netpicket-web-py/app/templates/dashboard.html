@@ -338,12 +338,12 @@
                   <tbody>
                     {% for serv in host['services'] %}
                     {% if vulns is none %}
-                    <tr><td class="text-success"><i class="fa fa-shield"></i> Secure</td></tr>
+                    <tr><td class="text-success"><i class="fa fa-shield"></i></td></tr>
                     {% else %}
                       {% if vulns[serv] %}
-                      <tr><td class="text-danger"><i class="fa fa-warning"></i> Vulnerable</td></tr>
+                      <tr><td class="text-danger"><i class="fa fa-warning"></i></td></tr>
                       {% else %}
-                      <tr><td class="text-success"><i class="fa fa-shield"></i> Secure</td></tr>
+                      <tr><td class="text-success"><i class="fa fa-shield"></i></td></tr>
                       {% endif %}
                     {% endif %}
                     {% endfor %}
@@ -358,7 +358,11 @@
                   <tbody>
                     {% for serv in host['services'] %}
                     {% if vulns[serv] %}
-                    <tr><td>{{vulns[serv]}}</td></tr>
+                    <tr><td>
+                        {% for cvevul in vulns[serv] %}
+                        <a href="{{'#'~cvevul}}">{{cvevul}}</a>
+                        {% endfor %}
+                    </td></tr>
                     {% else %}<tr><td>-</td></tr>{% endif %}
                     {% endfor %}
                   </tbody>
