@@ -92,7 +92,7 @@ function changeClassButtonIcon() {
 /***********
  * Deletes *
  ***********/
- 
+
 function deleteNetwork(netId) {
     $.ajax({
         type: 'DELETE',
@@ -136,7 +136,29 @@ function deleteEntry(entryId) {
         url: '/dashboard/wblists/' + entryId,
         success: function(data) {
             $('#entry-' + entryId).remove();
+            var rows = document.getElementById(
+                'table-w-list');
+            if (rows != null) {
+                rows = rows.getElementsByTagName(
+                    "tbody")[0].getElementsByTagName("tr").length;
+            }
+            if (rows != null && rows === 0) {
+                $('#div-table-w').remove();
+                document.getElementById('display-no-w-list').style.display = "";
+            } else {
+                var rows = document.getElementById(
+                    'table-b-list');
+                if (rows != null) {
+                    rows = rows.getElementsByTagName(
+                        "tbody")[0].getElementsByTagName("tr").length;
+                }
+                if (rows === 0) {
+                    $('#div-table-b').remove();
+                    document.getElementById('display-no-b-list').style.display = "";
+                }
+            }
         },
+        error: function(data) {}
     })
 }
 
@@ -295,6 +317,9 @@ $(document).ready(function() {
         $("#button-add-net").click();
     }
     if (document.getElementById('entryerrors') != null) {
+        $("#button-add-entry").click();
+    }
+    if (document.getElementById('inconsistent') != null) {
         $("#button-add-entry").click();
     }
     if (document.getElementById('hosterrors') != null) {

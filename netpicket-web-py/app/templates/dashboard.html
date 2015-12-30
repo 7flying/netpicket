@@ -91,7 +91,8 @@
     <br>
     <div class="alert alert-info" role="alert">
       <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-      <span class="sr-only">Hey! You don't have events</span><strong>No activity! </strong>
+      <span class="sr-only">Hey! You don't have events</span>
+      <strong>No activity! </strong>
       We haven't registered any activity.
     </div>
     {% else %}
@@ -284,7 +285,7 @@
          {% else %}
          id="hostediterrors" data-host-error="{{hosterror}}"
          {% endif %}
-           class="alert alert-danger" role="alert">
+         class="alert alert-danger" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign"
               aria-hidden="true"></span>
         <span class="sr-only">Invalid or empty fields on form.</span>
@@ -318,7 +319,8 @@
     <!-- end  add net-->
     <div class="col-md-12" id="display-no-hosts" style="display: none">
       <div class="alert alert-info" role="alert">
-        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="glyphicon glyphicon-exclamation-sign"
+              aria-hidden="true"></span>
         <span class="sr-only"></span><strong>Ups! </strong>
         You aren't monitoring vulnerabilities from any host. Please add one.
       </div>
@@ -326,7 +328,8 @@
     {% if hosts is none or hosts|length == 0 %}
     <div class="col-md-12">
       <div class="alert alert-info" role="alert">
-        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="glyphicon glyphicon-exclamation-sign"
+              aria-hidden="true"></span>
         <span class="sr-only"></span><strong>Ups! </strong>
         You aren't monitoring vulnerabilities from any host. Please add one.
       </div>
@@ -368,7 +371,8 @@
                 <label class="control-label"
                        for="edit-host-f-services">Services to monitor</label>
                 <input class="form-control" id="edit-host-f-services"
-                       name="edit-host-f-services" value="{{', '.join(host['services'])}}"
+                       name="edit-host-f-services"
+                       value="{{', '.join(host['services'])}}"
                        type="text"></input>
                 {% if hostediterrors and hostediterrors['services'] %}
                 <p class="help-block">Max 300 characters.</p>
@@ -524,13 +528,25 @@
     Invalid or empty fields on form.
   </div>
 </div>
-{% endif %} 
+{% endif %}
+{% if inconsistent %}
+<div class="col-md-12">
+  <div id="inconsistent"class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign"
+          aria-hidden="true"></span>
+    <span class="sr-only">You need to add a network</span>
+    <strong>Error!</strong>
+    This entry is inconsistent with the previous rules. Please revise it.
+  </div>
+</div>
+{% endif %}
 <div class="col-md-10">
   <h4>My white &amp; black lists</h4>
 </div>
 <div class="col-md-2">
   <button id="button-add-entry"
-          type="button" class="button-icon-collapse btn btn-primary" data-toggle="collapse"
+          type="button" class="button-icon-collapse btn btn-primary"
+          data-toggle="collapse"
           data-target="#collapse-add-entry" aria-expanded="false"
           aria-controls="collapse-add-entry">
     <span id="icon-collapse-pa" class="fa fa-plus-square"
@@ -545,13 +561,6 @@
   <div class="well clearfix">
     <h4><i class="fa fa-list"></i> Add entry</h4>
     <form class="form" role="form" method="post">
-      {% if inconsistent %}
-      <div class="alert alert-danger" role="alert">
-        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-        <span class="sr-only">You need to add a network</span><strong>Error!</strong>
-        This entry is inconsistent with the previous rules. Please revise it.
-      </div>
-      {% endif %}
       {{wtf.form_field(faddentry.mac)}}
       <div class="form-group">
         <label class="control-label" for="add-entry-f-networks">
@@ -560,7 +569,8 @@
         {{faddentry.type(class_="form-control selectpicker")}}
       </div>
       <div {% if entryneterror %}
-           class="form-group has-error" {% else %} class="form-group" {% endif %}>
+           class="form-group has-error" {% else %}
+           class="form-group" {% endif %}>
         <label for="add-entry-f-networks"
                {% if entryneterror %}
                class="control-label text-danger"
@@ -580,24 +590,34 @@
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">You need to add a network</span><strong>Hold on!</strong>
     You need to
-    <a href="{{url_for('dashboard', section='networks', id='default')}}">add a network</a>
-    before creating an W/B list entry.
+    <a href="{{url_for('dashboard', section='networks',
+             id='default')}}">add a network</a> before creating an W/B list entry.
   </div>
   {% endif %}
 </div>
 <!-- end  add entry-->
 
 <!-- white list -->
+<div class="col-md-12" id="display-no-w-list" style="display: none">
+  <div class="alert alert-info" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Hey! You don't have white lists</span>
+    <strong>Empty! </strong>
+    Your white list is empty, please add an entry.
+  </div>
+</div>
+
 {% if acls is none or acls.keys()|length == 0 or acls['W']|length == 0 %}
 <div class="col-md-12">
   <div class="alert alert-info" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-    <span class="sr-only">Hey! You don't have white lists</span><strong>Empty! </strong>
+    <span class="sr-only">Hey! You don't have white lists</span>
+    <strong>Empty! </strong>
     Your white list is empty, please add an entry.
   </div>
 </div>
 {% else %}
-<div class="col-md-12">
+<div class="col-md-12" id="div-table-w">
   <div class="panel panel-default">
     <div class="panel-heading">
       <span><i class="fa fa-file-text-o"></i></span>
@@ -605,7 +625,7 @@
     </div>
     <div class="panel-body">
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table id="table-w-list" class="table table-hover">
           <thead>
             <tr>
               <td><strong>Hostname</strong></td>
@@ -620,17 +640,20 @@
             <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
             {% else %}
             {% for entry in acls['W']|sort(attribute='host') %}
-            <tr>
-              <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
+            <tr id="{{'entry-'~entry['id']}}">
+              <td>{{entry['host'] if entry['host'] is not none and entry['host']|length > 0 else '-'}}</td>
               <td>{{entry['mac']}}</td>
-              <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
+              {% if entry['address'] is none or entry['address']|length == 0 %}
+              <td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
               <td><ul class="list-inline">
                   {% for id, name in entry['nets'] %} 
                   <li><a href="{{url_for('dashboard',
-                               section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
+                               section='networks', id='default')}}#net-{{id}}">
+                      {{name}}</a></li>
                   {% endfor %}
               </ul></td>
-              <td><button class="btn btn-warning btn-sm" type="button">
+              <td><button class="btn btn-warning btn-sm" type="button"
+                          onclick="deleteEntry({{entry['id']}});">
                   <span class="fa fa-remove"></span> Delete entry
               </button></td>
             </tr>
@@ -645,16 +668,25 @@
 {% endif %}
 <!-- end white list -->
 <!-- black list -->
+<div class="col-md-12" id="display-no-b-list" style="display: none">
+  <div class="alert alert-info" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Hey! You don't have black lists</span>
+    <strong>Empty!</strong>
+    Your black list is empty, please add an entry.
+  </div>
+</div>
 {% if acls is none or acls.keys()|length == 0 or acls['B']|length == 0 %}
 <div class="col-md-12">
   <div class="alert alert-info" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-    <span class="sr-only">Hey! You don't have black lists</span><strong>Empty!</strong>
+    <span class="sr-only">Hey! You don't have black lists</span>
+    <strong>Empty!</strong>
     Your black list is empty, please add an entry.
   </div>
 </div>
 {% else %}
-<div class="col-md-12">
+<div class="col-md-12" id="div-table-b">
   <div class="panel panel-default">
     <div class="panel-heading">
       <span><i class="fa fa-file-text"></i></span>
@@ -662,7 +694,7 @@
     </div>
     <div class="panel-body">
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table id="table-b-list" class="table table-hover">
           <thead>
             <tr>
               <td><strong>Hostname</strong></td>
@@ -676,17 +708,19 @@
             <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
             {% else %}
             {% for entry in acls['B']|sort(attribute='host') %}
-            <tr>
-              <td>{{entry['host'] if entry['host'] is not none else '-'}}</td>
+            <tr id="{{'entry-'~entry['id']}}">
+              <td>{{entry['host'] if entry['host'] is not none and entry['host']|length > 0 else '-'}}</td>
               <td>{{entry['mac']}}</td>
-              <td>{{entry['address'] if entry['host'] is not none else '-'}}</td>
+              {% if entry['address'] is none or entry['address']|length == 0 %}
+              <td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
               <td><ul class="list-inline">
                   {% for id, name in entry['nets'] %} 
                   <li><a href="{{url_for('dashboard',
                                section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
                   {% endfor %}
               </ul></td>
-              <td><button class="btn btn-warning btn-sm" type="button">
+              <td><button class="btn btn-warning btn-sm" type="button"
+                          onclick="deleteEntry({{entry['id']}})">
                   <span class="fa fa-remove"></span> Delete entry
               </button></td>
             </tr>

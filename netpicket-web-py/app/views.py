@@ -69,62 +69,58 @@ def _get_sec_alerts():
 def dashboard(section, id):
     """Shows the app's dashboard. """
     events, lastkey, alerts, hosts, networks, acls, scans, stats = (None,) * 8
-    vulns = None
-    can_acl = False # Whether the user can create or not an entry. Needs networks
-    if section == const.SEC_TIMELINE:
-        now = datetime.datetime.now()
-        events = {}
-        for i in range(const.TIMELINE_DAYS):
-            date = now - datetime.timedelta(days=i)
-            tempevents = models.get_user_events_date(current_user.id,
-                                                     date.strftime(
-                                                         const.STRTIME_DATE))
-            if len(tempevents) > 0:
-                events[date.strftime(const.STRTIME_DATE)] = tempevents
-        lastkey = now.strftime(const.STRTIME_DATE)
-    elif section == const.SEC_ALERTS:
-        alerts, hosts, vulns = _get_sec_alerts()
-    elif section == const.SEC_NETWORKS:
-        networks = models.get_user_networks(current_user.id)
-    elif section == const.SEC_ACLS:
-        can_acl = models.get_count_user_networks(current_user.id) > 0
-        acls = {}
-        acls['W'] = models.get_entries('W', current_user.id)
-        acls['B'] = models.get_entries('B', current_user.id)
-        print acls
-    elif section == const.SEC_SCANS:
-        pass
-    elif section == const.SEC_STATS:
-        pass
-    else:
-        return abort(404)
+    vulns, faddnet, faddentry, faddhost = (None,) * 4
+    can_acl = False # If the user can create or not an entry (nets are needed)
     if request.method == 'GET':
+        if section == const.SEC_TIMELINE:
+            now = datetime.datetime.now()
+            events = {}
+            for i in range(const.TIMELINE_DAYS):
+                date = now - datetime.timedelta(days=i)
+                tempevents = models.get_user_events_date(
+                    current_user.id, date.strftime(const.STRTIME_DATE))
+                if len(tempevents) > 0:
+                    events[date.strftime(const.STRTIME_DATE)] = tempevents
+            lastkey = now.strftime(const.STRTIME_DATE)
+        elif section == const.SEC_ALERTS:
+            faddhost = AddHostForm(prefix='add-host-f')
+            alerts, hosts, vulns = _get_sec_alerts()
+        elif section == const.SEC_NETWORKS:
+            faddnet = AddNetworkForm(prefix='add-net-f')
+            networks = models.get_user_networks(current_user.id)
+        elif section == const.SEC_ACLS:
+            faddentry = AddCALEntryForm(prefix='add-entry-f').new(
+                current_user.id)
+            can_acl = models.get_count_user_networks(current_user.id) > 0
+            acls = {'W': models.get_entries('W', current_user.id),
+                    'B': models.get_entries('B', current_user.id)}
+        elif section == const.SEC_SCANS:
+            pass
+        elif section == const.SEC_STATS:
+            pass
+        else:
+            abort(404)
         return render_template('dashboard.html', section=section, events=events,
                                lastkey=lastkey, cves=alerts, nets=networks,
                                acls=acls, canacl=can_acl, scans=scans,
                                stats=stats, hosts=hosts, vulns=vulns,
-                               faddnet=AddNetworkForm(prefix='add-net-f'),
-                               faddentry=AddCALEntryForm(
-                                   prefix='add-entry-f').new(current_user.id),
-                               faddhost=AddHostForm(prefix='add-host-f'))
+                               faddnet=faddnet, faddentry=faddentry,
+                               faddhost=faddhost)
     elif request.method == 'POST':
-        faddnet = AddNetworkForm(request.form, prefix='add-net-f')
-        faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(
-            current_user.id)
-        faddhost = AddHostForm(request.form, prefix='add-host-f')
         neterrors, entryerrors, entryneterror, entryincon = (False, ) * 4
         hosterrors = False
         if section == const.SEC_NETWORKS:
+            faddnet = AddNetworkForm(request.form, prefix='add-net-f')
             if faddnet.validate_on_submit():
                 nname = faddnet.name.data
                 ipaddress = faddnet.ipaddress.data
                 models.set_network(current_user.id, nname, '', '', '', '',
                                    ipaddress, '', '', '')
-                flash('Network successfully added.', const.ALERT_SUCCESS)
                 networks = models.get_user_networks(current_user.id)
             else:
                 neterrors = True
         elif section == const.SEC_ALERTS:
+            faddhost = AddHostForm(request.form, prefix='add-host-f')
             if faddhost.validate_on_submit():
                 hname = faddhost.name.data
                 hservices = faddhost.services.data
@@ -135,24 +131,19 @@ def dashboard(section, id):
             else:
                 hosterrors = True
         elif section == const.SEC_ACLS:
+            faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(
+                current_user.id)
             can_acl = models.get_count_user_networks(current_user.id) > 0
-            networks = [1] #faddentry.networks.data
+            networks = faddentry.networks.data
             mac = faddentry.mac.data
             list_type = faddentry.type.data
-            print networks
-            print mac
-            print list_type
-            print " [INFO] on acls"
             if faddentry.validate_on_submit():
-                print " [INFO] entry form ACK"
-                if models.is_entry_consistent(current_user.id, list_type, mac,
-                                              networks):
-                    models.save_entry(current_user.id, list_type, '', mac,
-                                      '', networks)
-                else:
-                    entryincon = True
+                entryincon = models.save_entry(current_user.id, list_type,
+                                              '', mac, '', networks)
+                entryincon = not entryincon # the method returned consistent
+                acls = {'W': models.get_entries('W', current_user.id),
+                        'B': models.get_entries('B', current_user.id)}
             else:
-                print " [INFO] entry form NACK"
                 entryneterror = len(networks) == 0
                 entryerrors = True
         return render_template('dashboard.html', section=section,
@@ -174,10 +165,15 @@ def dashboard(section, id):
             if id is not None and len(id) > 0:
                 models.delete_host(current_user.id, id)
                 hosts = models.get_user_hosts(current_user.id)
+        elif section == const.SEC_ACLS:
+            if id is not None and len(id) > 0:
+                models.delete_entry(current_user.id, id)
+                acls = {'W': models.get_entries('W', current_user.id),
+                        'B': models.get_entries('B', current_user.id)}
         return render_template('dashboard.html', section=section, events=events,
                                lastkey=lastkey, cves=alerts, nets=networks,
                                acls=acls, canacl=can_acl, scans=scans,
-                               stats=stats, hosts=hosts, vulns=vulns, 
+                               stats=stats, hosts=hosts, vulns=vulns,
                                faddhost=AddHostForm(prefix='add-host-f'),
                                faddnet=AddNetworkForm(prefix='add-net-f'),
                                faddentry=AddCALEntryForm(
