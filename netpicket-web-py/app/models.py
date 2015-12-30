@@ -39,7 +39,7 @@ class User(db.Model):
 # --- Network/buoy --- #
 # Network/buoys are stored in hashes, which hold the network's main properties.
 # The net id must be generated with _get_key_net()
-# When a new network is created add it to the user's list of networks.
+# When a new network is created add it to the user's set of networks.
 _KEY_NET_ID = 'net-id-auto:'
 _KEY_NET = 'net:{0}'
 _ATTR_NET_NAME = 'name'
@@ -61,13 +61,12 @@ def _get_key_net():
 
 def get_count_user_networks(user_id):
     """Returns the number of nets. a user has."""
-    length = red.llen(_KEY_NETS_USER.format(str(user_id)))
-    print " [INFO DB] net length", length
+    length = red.scard(_KEY_NETS_USER.format(str(user_id)))
     return length if length is not None else 0
 
 def get_user_networks(user_id):
     """Returns all the user's networks."""
-    keys = red.lrange(_KEY_NETS_USER.format(str(user_id)), 0, -1)
+    keys = red.smembers(_KEY_NETS_USER.format(str(user_id)))
     nets = []
     for key in keys:
         tmp = get_network(key)
@@ -80,7 +79,7 @@ def set_network(user, name, iface, haddress, speed, sec, address, submask,
     """Saves a network."""
     key = _get_key_net()
     pip = red.pipeline()
-    pip.rpush(_KEY_NETS_USER.format(str(user)), key)
+    pip.sadd(_KEY_NETS_USER.format(str(user)), key)
     pip.hset(_KEY_NET.format(key), _ATTR_NET_NAME, name)
     pip.hset(_KEY_NET.format(key), _ATTR_NET_IFACE, iface)
     pip.hset(_KEY_NET.format(key), _ATTR_NET_HADDR, haddress)
@@ -107,33 +106,32 @@ def delete_network(user_id, net_id):
     user_id = str(user_id)
     net_id = str(net_id)
     pip.delete(_KEY_NET.format(net_id))
-    pip.lrem(_KEY_NETS_USER.format(user_id), 0, net_id)
+    pip.srem(_KEY_NETS_USER.format(user_id), net_id)
     # Delete associated events
     events = get_user_events_network(user_id, net_id)
     for event in events:
-        pip.lrem(_KEY_EVENTS_USER_DATE.format(user_id, event['date']),
-                 0, event['id'])
+        pip.lrem(_KEY_EVENTS_USER_DATE.format(user_id, event['date']), 0,
+                 event['id'])
         pip.delete(_KEY_EVENT_USER.format(event['id'], user_id))
     pip.delete(_KEY_EVENTS_USER_NET.format(user_id, net_id)) # user-network
     # Delete associated entries on wb lists
     for entry in _get_entries_network(net_id, user_id):
         # delete network from the entry, if it has one network delete entry
-        if len(red.lrange(_KEY_ENTRY_LIST_NETS.format(entry['id']),
-                          0, -1)) == 1:
-            pip.delete(_KEY_ENTRY_USER.format(entry['id'], user_id))
+        if red.scard(_KEY_ENTRY_SET_NETS.format(entry['id'])) == 1:
+            pip.delete(_KEY_ENTRY.format(entry['id']))
             # delete from w or b list of entries
             if entry['type'] == 'B':
-                pip.lrem(_KEY_ENTRY_BLACK_USER.format(user_id), 0, entry['id'])
+                pip.srem(_KEY_ENTRY_BLACK_USER.format(user_id), entry['id'])
             else:
-                pip.lrem(_KEY_ENTRY_WHITE_USER.format(user_id), 0, entry['id'])
-        pip.lrem(_KEY_ENTRY_LIST_NETS.format(entry['id']), 0, net_id)
+                pip.srem(_KEY_ENTRY_WHITE_USER.format(user_id), entry['id'])
+        pip.srem(_KEY_ENTRY_SET_NETS.format(entry['id']), 0, net_id)
     pip.execute()
 
 # --- Events --- #
 # Events are stored in hashes, which hold the event's main properties.
 # The event id must be generated using _get_key_event().
-# When an event is stored its ID is also added to a list of events-day
-# for a given user, and to a list of events per network and user.
+# When an event is stored its ID is also added to a set of events-day
+# for a given user, and to a set of events per network and user.
 # These last have the newest event at their 0 position.
 _KEY_EVENT_ID = 'event-id-auto:'
 _KEY_EVENT_USER = 'event:{0}:user:{1}'
@@ -225,67 +223,111 @@ def get_user_events_day_network(user_id, network_id, day):
 # --- W/B lists' entries --- #
 # WB lists' entries are stored in hashes, which hold the entry's main properties
 # The entry id must be generated using _get_key_entry().
-# Each entry has an associated network id list.
-# Each network has an associated list of wb entries.
-# Each user has two lists that hold the ids of B-list and W-list entries.
+# Each entry has an associated network id set.
+# Each network has an associated set of wb entries.
+# Each user has two sets that hold the ids of B-list and W-list entries.
 _KEY_ENTRY_ID = 'list-entry-i-auto:'
-_KEY_ENTRY_USER = 'entry:{0}:user:{1}'
+_KEY_ENTRY = 'entry:{0}'
 _ATTR_ENTRY_TYPE = 'type'
 _ATTR_ENTRY_HOST = 'host'
 _ATTR_ENTRY_MAC = 'mac'
-_ATTR_ENTRY_ADDR = 'addres'
+_ATTR_ENTRY_ADDR = 'address'
 
-_KEY_ENTRY_LIST_NETS = 'entry:{0}:list-nets'
+_KEY_ENTRY_SET_NETS = 'entry:{0}:set-nets'
 _KEY_ENTRY_BLACK_USER = 'black:user:{0}'
 _KEY_ENTRY_WHITE_USER = 'white:user:{0}'
 
-_KEY_NET_LIST_ENTRIES = 'net:{0}:list-entries'
+_KEY_NET_SET_ENTRIES = 'net:{0}:set-entries'
 
 def _get_key_entry():
     """Returns a str with the next entry key."""
     return str(red.incr(_KEY_ENTRY_ID))
 
-def is_entry_consistent(user_id, typ, mac, nets):
+def _is_entry_consistent(user_id, typ, mac, nets):
     """Check whether the new entry rule is consistent with the existing ones,
-    aka not black list and white list at the same time."""
-    # TODO
+    aka not black list and white list at the same time and not repeated."""
+    # Get the entries from the opposite type, check the mac
+    if typ == 'B':
+        sames = red.smembers(_KEY_ENTRY_BLACK_USER.format(user_id))
+    else:
+        sames = red.smembers(_KEY_ENTRY_WHITE_USER.format(user_id))
+    if len(sames) > 0:
+        for same in sames:
+            entry = get_entry(same)
+            if entry['mac'] == mac:
+                for netid, _ in entry['nets']:
+                    if netid in nets:
+                        return False
+    if typ == 'B':
+        opposites = red.smembers(_KEY_ENTRY_WHITE_USER.format(user_id))
+    else:
+        opposites = red.smembers(_KEY_ENTRY_BLACK_USER.format(user_id))
+    if len(opposites) > 0:
+        for opp in opposites:
+            entry = get_entry(opp)
+            if entry['mac'] == mac:
+                for netid, _ in entry['nets']:
+                    if netid in nets:
+                        return False
     return True
 
 def _get_entries_network(net_id, user_id):
     """Gets the entries with the given network."""
     net_id = str(net_id)
     user_id = str(user_id)
-    entries = red.lrange(_KEY_NET_LIST_ENTRIES.format(net_id), 0, -1)
+    entries = red.smembers(_KEY_NET_SET_ENTRIES.format(net_id))
     ret = []
     for entry in entries:
-        ret.append(get_entry(user_id, entry))
+        ret.append(get_entry(entry))
     return ret
+
+def delete_entry(user_id, entry_id):
+    """Deletes an entry."""
+    user_id = str(user_id)
+    entry_id = str(entry_id)
+    auth = entry_id in red.smembers(_KEY_ENTRY_BLACK_USER.format(user_id))
+    if not auth:
+        auth = entry_id in red.smembers(_KEY_ENTRY_WHITE_USER.format(user_id))
+    if auth:
+        temp_ent = get_entry(entry_id)
+        if temp_ent['type'] == 'B':
+            red.srem(_KEY_ENTRY_BLACK_USER.format(user_id), entry_id)
+        else:
+            red.srem(_KEY_ENTRY_WHITE_USER.format(user_id), entry_id)
+        red.delete(_KEY_ENTRY.format(entry_id))
+        for net in red.smembers(_KEY_ENTRY_SET_NETS.format(entry_id)):
+            red.srem(_KEY_NET_SET_ENTRIES.format(net), entry_id)
+        red.delete(_KEY_ENTRY_SET_NETS.format(entry_id))
 
 def save_entry(user_id, typ, host, mac, addr, nets):
     """Saves and entry."""
-    # TODO: check mac not repeated for a network
-    if typ in ['B', 'W']:
-        key = _get_key_entry()
-        pipe = red.pipeline()
-        if typ == 'B':
-            pipe.rpush(_KEY_ENTRY_BLACK_USER.format(user_id), key)
-        else:
-            pipe.rpush(_KEY_ENTRY_WHITE_USER.format(user_id), key)
-        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_TYPE, typ)
-        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_HOST, host)
-        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_MAC, mac)
-        pipe.hset(_KEY_ENTRY_USER.format(key, user_id), _ATTR_ENTRY_ADDR, addr)
-        for net in nets:
-            pipe.rpush(_KEY_ENTRY_LIST_NETS.format(key), str(net))
-            pipe.rpush(_KEY_NET_LIST_ENTRIES.format(str(net)), key)
-        pipe.execute()
+    user_id = str(user_id)
+    consistent = _is_entry_consistent(user_id, typ, mac, nets)
+    if consistent:
+        if typ in ['B', 'W']:
+            key = _get_key_entry()
+            pipe = red.pipeline()
+            if typ == 'B':
+                pipe.sadd(_KEY_ENTRY_BLACK_USER.format(user_id), key)
+            else:
+                pipe.sadd(_KEY_ENTRY_WHITE_USER.format(user_id), key)
+            pipe.hset(_KEY_ENTRY.format(key), _ATTR_ENTRY_TYPE, typ)
+            pipe.hset(_KEY_ENTRY.format(key), _ATTR_ENTRY_HOST, host)
+            pipe.hset(_KEY_ENTRY.format(key), _ATTR_ENTRY_MAC, mac)
+            pipe.hset(_KEY_ENTRY.format(key), _ATTR_ENTRY_ADDR, addr)
+            for net in nets:
+                pipe.sadd(_KEY_ENTRY_SET_NETS.format(key), str(net))
+                pipe.sadd(_KEY_NET_SET_ENTRIES.format(str(net)), key)
+            pipe.execute()
+    return consistent
 
-def get_entry(user_id, entry_id):
+def get_entry(entry_id):
     """Gets an entry."""
-    temp = red.hgetall(_KEY_ENTRY_USER.format(entry_id, user_id))
+    entry_id = str(entry_id)
+    temp = red.hgetall(_KEY_ENTRY.format(entry_id))
     if temp is not None:
         temp['id'] = entry_id
-        nets = red.lrange(_KEY_ENTRY_LIST_NETS.format(entry_id), 0, -1)
+        nets = red.smembers(_KEY_ENTRY_SET_NETS.format(entry_id))
         tempnets = []
         if nets is not None:
             for net in nets:
@@ -299,12 +341,12 @@ def get_entries(typ, user_id):
     ents = None
     ret = []
     if typ == 'B':
-        ents = red.lrange(_KEY_ENTRY_BLACK_USER.format(user_id), 0, -1)
+        ents = red.smembers(_KEY_ENTRY_BLACK_USER.format(user_id))
     elif typ == 'W':
-        ents = red.lrange(_KEY_ENTRY_WHITE_USER.format(user_id), 0, -1)
+        ents = red.smembers(_KEY_ENTRY_WHITE_USER.format(user_id))
     if ents is not None:
         for ent in ents:
-            tmp = get_entry(user_id, ent)
+            tmp = get_entry(ent)
             if tmp is not None:
                 ret.append(tmp)
     return ret
