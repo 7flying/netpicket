@@ -33,10 +33,9 @@
     </div>
     <div class="collapse navbar-collapse" id="my-super-collapse">
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="">About</a></li>
+        <li><a href="#">About</a></li>
         {% if current_user.is_authenticated() %}
-        <li><a href="{{ url_for('logout')}}">Logout</a>
-        </li>
+        <li><a href="{{ url_for('logout')}}">Logout</a></li>
         {% endif %}
       </ul>
     </div>
@@ -64,7 +63,7 @@
 <footer class="doc-footer">
   <div class="container">
     <p>
-      © 2015 <a href="http://twitter.com/seven_flying">7flying</a>.
+      © 2015 - <span id="current-year"></span> <a href="http://twitter.com/seven_flying">7flying</a>.
       All rights reserved.<br>
       <i class="fa fa-code fa-lg"></i> with <span class="doc-heart">
         <i class="fa fa-heart text-danger"></i>

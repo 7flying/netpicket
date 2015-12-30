@@ -99,6 +99,12 @@ function deleteNetwork(netId) {
         url: '/dashboard/networks/' + netId,
         success: function(data) {
             $('#net-' + netId).remove();
+            var nets = document.getElementById(
+                "accordion-nets").getElementsByTagName("div").length;
+            if (nets === 0) {
+                $("#div-accordion-hosts").remove();
+                document.getElementById("display-no-nets").style.display = "";
+            }
         },
         error: function(data) {
         }
@@ -111,10 +117,27 @@ function deleteHost(hostId) {
         url: '/dashboard/alerts/' + hostId,
         success: function(data) {
             $('#host-' + hostId).remove();
+            var rows = document.getElementById(
+                'table-hosts').getElementsByTagName(
+                    "tbody")[0].getElementsByTagName("tr").length;
+            if (rows === 0) {
+                $("#div-table-hosts").remove();
+                document.getElementById("display-no-hosts").style.display = "";
+            }
         },
         error: function(data) {
         }
     }); 
+}
+
+function deleteEntry(entryId) {
+    $.ajax({
+        type: 'DELETE',
+        url: '/dashboard/wblists/' + entryId,
+        success: function(data) {
+            $('#entry-' + entryId).remove();
+        },
+    })
 }
 
 /*********
@@ -254,6 +277,8 @@ function getStats() {
 }
 
 $(document).ready(function() {
+    $('#current-year').text(new Date().getFullYear());
+    
     if (window.location.href.indexOf('dashboard') > -1) {
         // if (document.getElementById('updated-ago') != null)
         //     timelineSSE();

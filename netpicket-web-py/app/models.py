@@ -223,11 +223,11 @@ def get_user_events_day_network(user_id, network_id, day):
     return ret
 
 # --- W/B lists' entries --- #
-# WB lists' entries are stored in hashes, which hold the entry's main properties.
+# WB lists' entries are stored in hashes, which hold the entry's main properties
 # The entry id must be generated using _get_key_entry().
-# Each entry has an associated network id list,
-# Each network has an associated list of wb entries
-# Each user has two lists that hold the ids of  black list and white list entries.
+# Each entry has an associated network id list.
+# Each network has an associated list of wb entries.
+# Each user has two lists that hold the ids of B-list and W-list entries.
 _KEY_ENTRY_ID = 'list-entry-i-auto:'
 _KEY_ENTRY_USER = 'entry:{0}:user:{1}'
 _ATTR_ENTRY_TYPE = 'type'

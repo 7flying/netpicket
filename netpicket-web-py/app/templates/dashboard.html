@@ -172,6 +172,15 @@
     </div>
     <!-- end  add net-->
     <br>
+    <div id="display-no-nets" class="col-md-12" style="display: none">
+      <div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign"
+              aria-hidden="true"></span>
+        <span class="sr-only">Hey! You don't have networks</span>
+        <strong>Hey!</strong>
+        You don't have networks, please add one.
+      </div>
+    </div>
     {% if nets|length == 0 %}
     <div class="col-md-12">
       <div class="alert alert-info" role="alert">
@@ -184,11 +193,11 @@
     </div>
     {% else %}
     <br>
-    <div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="col-md-12 col-sm-12 col-xs-12" id="div-accordion-hosts">
       <div class="panel-group" id="accordion-nets" role="tablist"
            aria-multiselectable="true">
         {% for net in nets|sort(attribute='name') %}
-        <div class="panel panel-default" id={{'net-'~net['id']}}>
+        <div class="panel panel-default" id="{{'net-'~net['id']}}">
           <div class="panel-heading" role="tab" id="{{'net-'~net['id']~'tab'}}">
             <h4 class="panel-title">
               <a role="button" class="collapsed" data-toggle="collapse"
@@ -307,6 +316,13 @@
       </div>
     </div>
     <!-- end  add net-->
+    <div class="col-md-12" id="display-no-hosts" style="display: none">
+      <div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only"></span><strong>Ups! </strong>
+        You aren't monitoring vulnerabilities from any host. Please add one.
+      </div>
+    </div>
     {% if hosts is none or hosts|length == 0 %}
     <div class="col-md-12">
       <div class="alert alert-info" role="alert">
@@ -374,9 +390,9 @@
     </div>
     {% endfor %}
     <!-- end modal to edit host -->
-    <div class="col-md-12">
+    <div id="div-table-hosts" class="col-md-12">
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table id="table-hosts" class="table table-hover">
           <thead>
             <tr>
               <td><strong>Host</strong></td>
@@ -614,10 +630,8 @@
                                section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
                   {% endfor %}
               </ul></td>
-              <td><button class="btn btn-default btn-sm" type="button">
-                  <span class="fa fa-edit"></span> Edit
-                </button> <button class="btn btn-warning btn-sm" type="button">
-                  <span class="fa fa-remove"></span> Delete
+              <td><button class="btn btn-warning btn-sm" type="button">
+                  <span class="fa fa-remove"></span> Delete entry
               </button></td>
             </tr>
             {% endfor %}
@@ -672,10 +686,8 @@
                                section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
                   {% endfor %}
               </ul></td>
-              <td><button class="btn btn-default btn-sm" type="button">
-                  <span class="fa fa-edit"></span> Edit
-                </button> <button class="btn btn-warning btn-sm" type="button">
-                  <span class="fa fa-remove"></span> Delete
+              <td><button class="btn btn-warning btn-sm" type="button">
+                  <span class="fa fa-remove"></span> Delete entry
               </button></td>
             </tr>
             {% endfor %}
