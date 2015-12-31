@@ -16,7 +16,7 @@ PRIORITIES = {0: 'Info', 1: 'Low', 2: 'Medium', 3: 'High'}
 PRIORITY_COLOUR = {0: 'G', 1: 'B', 2: 'O', 3: 'R'}
 
 # Timeline days
-TIMELINE_DAYS = 3
+TIMELINE_DAYS = 7
 
 # Section names
 SEC_TIMELINE = 'timeline'

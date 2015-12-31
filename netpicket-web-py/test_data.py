@@ -7,7 +7,7 @@ import random, datetime, itertools, string
 import app.models as models
 import app.const as const
 
-def generate_mockup_data(networks=10, days=7, events_day=5, entries=5, hosts=5,
+def generate_mockup_data(networks=2, days=7, events_day=10, entries=5, hosts=5,
                          services=3):
     """Generate mockup data."""
     users = models.User.query.all()

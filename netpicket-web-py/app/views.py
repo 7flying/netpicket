@@ -70,7 +70,8 @@ def dashboard(section, id):
     """Shows the app's dashboard. """
     events, lastkey, alerts, hosts, networks, acls, scans, stats = (None,) * 8
     vulns, faddnet, faddentry, faddhost = (None,) * 4
-    can_acl = False # If the user can create or not an entry (nets are needed)
+    # Checks if the user can create acl entries or manage scans (nets required)
+    can_acl, can_manage = (False,) * 2 
     if request.method == 'GET':
         if section == const.SEC_TIMELINE:
             now = datetime.datetime.now()
@@ -95,7 +96,7 @@ def dashboard(section, id):
             acls = {'W': models.get_entries('W', current_user.id),
                     'B': models.get_entries('B', current_user.id)}
         elif section == const.SEC_SCANS:
-            pass
+            can_manage = models.get_count_user_networks(current_user.id) > 0
         elif section == const.SEC_STATS:
             pass
         else:
@@ -105,7 +106,8 @@ def dashboard(section, id):
                                acls=acls, canacl=can_acl, scans=scans,
                                stats=stats, hosts=hosts, vulns=vulns,
                                faddnet=faddnet, faddentry=faddentry,
-                               faddhost=faddhost)
+                               faddhost=faddhost,
+                               can_manage=can_manage)
     elif request.method == 'POST':
         neterrors, entryerrors, entryneterror, entryincon = (False, ) * 4
         hosterrors = False
@@ -209,18 +211,11 @@ def manage_host(hid):
                                cves=alerts, hosts=hosts, vulns=vulns,
                                hostediterrors=hostediterrors, hosterror=hid,
                                faddhost=AddHostForm(prefix='add-host-f'))
+
 @login_manager.user_loader
 def load_user(id):
     return models.User.query.get(int(id))
 
-"""
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-   #Logs the user in the application.
-    if g.user is not None and g.user.is_authenticated():
-        return redirect(url_for('profile'))
-    return render_template('login.html', title='Sign In')
-"""
 @app.route('/logout')
 @login_required
 def logout():
@@ -255,7 +250,8 @@ def timeline_event_stream(user_id):
                                 'priority': const.PRIORITY_COLOUR[
                                     random.randint(0, 3)],
                                 'text': text, 'netid': '1'}
-        if mess and mess.get('data') != 1L and mess.get('data').get('text') != None:
+        if mess and mess.get('data') != 1L and mess.get('data').get(
+                'text') != None:
             # Store on the db, and send it to the client
             models.save_event(user_id, mess['data']['netid'],
                               mess['data']['text'], mess['data']['date'],
@@ -275,6 +271,7 @@ def timeline():
 @app.route('/checkstats')
 @login_required
 def check_stats():
+    """Returns a json with the latests statistics."""
     now = datetime.datetime.now()
     nets = models.get_user_networks(current_user.id)
     # order of the days

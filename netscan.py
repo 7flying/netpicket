@@ -72,25 +72,29 @@ def print_scan(nmap_report):
         else:
             tmp_host = host.address
 
-        print("Nmap scan report for {0} ({1})".format(
-            tmp_host,
-            host.address))
-        print "Host is {0}.".format(host.status)
-        print "  PORT     STATE         SERVICE"
+        if host.status in 'up':
+            print("Nmap scan report for {0} ({1})".format(
+                tmp_host,
+                host.address))
+            print host.vendor
+            print "MAC address: {0}".format(host.mac)
+            print "Host is {0}.".format(host.status)
+            print "  PORT     STATE         SERVICE"
 
-        for serv in host.services:
-            pserv = "{0:>5s}/{1:3s}  {2:12s}  {3}".format(str(serv.port),
-                                                          serv.protocol,
-                                                          serv.state,
-                                                          serv.service)
-            if len(serv.banner):
-                pserv += " ({0})".format(serv.banner)
-            print pserv
+            for serv in host.services:
+                pserv = "{0:>5s}/{1:3s}  {2:12s}  {3}".format(str(serv.port),
+                                                              serv.protocol,
+                                                              serv.state,
+                                                              serv.service)
+                if len(serv.banner):
+                    pserv += " ({0})".format(serv.banner)
+                print pserv
     print nmap_report.summary
 
 
 if __name__ == "__main__":
-    report = _run_scan("127.0.0.1", "-sV")
+    #report = _run_scan("127.0.0.1", "-sV")
+    report = _run_scan("192.168.1.*", "-sP")
     if report:
         print_scan(report)
     else:

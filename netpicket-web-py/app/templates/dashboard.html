@@ -65,7 +65,7 @@
         >
       <a href="{{url_for('dashboard', section='scans', id='default')}}"
          data-placement="bottom" rel="tooltip"
-         title="Schedule network scans">
+         title="Manage network scans">
         <span><i class="fa fa-flash"></i></span> Scans
       </a>
     </li>
@@ -519,7 +519,6 @@
 <!-- --->
 {% elif section == 'wblists' %}
 <br>
-
 {% if entryerrors %}
 <div class="col-md-12">
   <div id="entryerrors" class="alert alert-danger" role="alert">
@@ -642,28 +641,28 @@
             {% for entry in acls['W']|sort(attribute='host') %}
             <tr id="{{'entry-'~entry['id']}}">
               <td>{{entry['host'] if entry['host'] is not none and entry['host']|length > 0 else '-'}}</td>
-              <td>{{entry['mac']}}</td>
-              {% if entry['address'] is none or entry['address']|length == 0 %}
-              <td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
-              <td><ul class="list-inline">
-                  {% for id, name in entry['nets'] %} 
-                  <li><a href="{{url_for('dashboard',
-                               section='networks', id='default')}}#net-{{id}}">
-                      {{name}}</a></li>
-                  {% endfor %}
-              </ul></td>
-              <td><button class="btn btn-warning btn-sm" type="button"
-                          onclick="deleteEntry({{entry['id']}});">
-                  <span class="fa fa-remove"></span> Delete entry
-              </button></td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div><!-- default -->
+                <td>{{entry['mac']}}</td>
+                {% if entry['address'] is none or entry['address']|length == 0 %}
+<td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
+<td><ul class="list-inline">
+    {% for id, name in entry['nets'] %} 
+    <li><a href="{{url_for('dashboard',
+                 section='networks', id='default')}}#net-{{id}}">
+        {{name}}</a></li>
+    {% endfor %}
+</ul></td>
+<td><button class="btn btn-warning btn-sm" type="button"
+            onclick="deleteEntry({{entry['id']}});">
+    <span class="fa fa-remove"></span> Delete entry
+</button></td>
+</tr>
+{% endfor %}
+{% endif %}
+</tbody>
+</table>
+</div>
+</div>
+</div><!-- default -->
 </div><!-- col-md- 12 -->
 {% endif %}
 <!-- end white list -->
@@ -710,32 +709,51 @@
             {% for entry in acls['B']|sort(attribute='host') %}
             <tr id="{{'entry-'~entry['id']}}">
               <td>{{entry['host'] if entry['host'] is not none and entry['host']|length > 0 else '-'}}</td>
-              <td>{{entry['mac']}}</td>
-              {% if entry['address'] is none or entry['address']|length == 0 %}
-              <td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
-              <td><ul class="list-inline">
-                  {% for id, name in entry['nets'] %} 
-                  <li><a href="{{url_for('dashboard',
-                               section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
-                  {% endfor %}
-              </ul></td>
-              <td><button class="btn btn-warning btn-sm" type="button"
-                          onclick="deleteEntry({{entry['id']}})">
-                  <span class="fa fa-remove"></span> Delete entry
-              </button></td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div><!-- default -->
+<td>{{entry['mac']}}</td>
+{% if entry['address'] is none or entry['address']|length == 0 %}
+<td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
+<td><ul class="list-inline">
+    {% for id, name in entry['nets'] %} 
+    <li><a href="{{url_for('dashboard',
+                 section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
+    {% endfor %}
+</ul></td>
+<td><button class="btn btn-warning btn-sm" type="button"
+            onclick="deleteEntry({{entry['id']}})">
+    <span class="fa fa-remove"></span> Delete entry
+</button></td>
+</tr>
+{% endfor %}
+{% endif %}
+</tbody>
+</table>
+</div>
+</div>
+</div><!-- default -->
 </div><!-- col-md- 12 -->
 {% endif %}
 <!-- end black list -->
 {% elif section == 'scans' %}
+<br>
+<div class="col-md-12">
+  <h4>Scans</h4>
+</div>
+{% if not can_manage %}
+<div class="col-md-12">
+  <div class="alert alert-warning" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">You need to add a network</span><strong>Hold on!</strong>
+    You need to
+    <a href="{{url_for('dashboard', section='networks',
+             id='default')}}">add a network</a> before managing scans.
+  </div>
+</div>
+{% else %}
+{% for net in net_buoy %}
+{% endfor %}
+{% endif %}
 {% elif section == 'stats' %}
+<br>
 <div class="col-md-12">
   <h4>Weekly statistics</h4>
 </div>
