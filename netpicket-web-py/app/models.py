@@ -2,8 +2,6 @@
 """
 App's models and db management.
 """
-
-import app.const as const
 from app import db, red
 
 class User(db.Model):
@@ -126,6 +124,12 @@ def delete_network(user_id, net_id):
                 pip.srem(_KEY_ENTRY_WHITE_USER.format(user_id), entry['id'])
         pip.srem(_KEY_ENTRY_SET_NETS.format(entry['id']), 0, net_id)
     pip.execute()
+    # Search for associated api keys to this network
+    apik_ids = red.smembers(_KEY_APIKS_USER.format(user_id))
+    for apik in apik_ids:
+        tmp = red.hgetall(_KEY_APIK.format(apik))
+        if tmp and tmp['network'] == net_id:
+            delete_api_key(user_id, apik)
 
 # --- Events --- #
 # Events are stored in hashes, which hold the event's main properties.
@@ -445,4 +449,53 @@ def delete_host(user_id, host_id):
         else:
             pip.srem(_KEY_SERVNAME_HOSTS.format(serv), host_id)
     red.delete(_KEY_HOST_SET_SERVS.format(host_id))
+    pip.execute()
+
+# --- API keys --- #
+# API keys are stored in hashes, including the key, the associated network id
+# and when was created
+# Each user has a set of associated keys
+_KEY_APIK_ID = 'api-key-id-auto:'
+_KEY_APIK = 'api-key:{0}'
+_ATTR_APIK_NET = 'network'
+_ATTR_APIK_KEY = 'key'
+_ATTR_APIK_GENERATED = 'generated'
+
+_KEY_APIKS_USER = 'api-keys:user:{0}'
+
+
+def _get_key_api():
+    """Returns an str with the next api-key id."""
+    return str(red.incr(_KEY_APIK_ID))
+
+def get_api_key(apik_id):
+    """Retrieves an api key."""
+    apik_id = str(apik_id)
+    tmp = red.hgetall(_KEY_APIK.format(apik_id))
+    if tmp is not None:
+        tmp['id'] = apik_id
+    return tmp
+
+def set_api_key(userid, netid, apikey, generated_at):
+    """Saves an api key."""
+    userid = str(userid)
+    netid = str(netid)
+    key = _get_key_api()
+    pip = red.pipeline()
+    pip.sadd(_KEY_APIKS_USER.format(userid), key)
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_KEY, apikey)
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_NET, netid)
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_GENERATED, generated_at)
+    pip.execute()
+
+def delete_api_key(user_id, apik_id):
+    """Deletes an api key."""
+    user_id = str(user_id)
+    apik_id = str(apik_id)
+    pip = red.pipeline()
+    if pip.scard(_KEY_APIKS_USER.format(user_id)) == 1:
+        pip.delete(_KEY_APIKS_USER.format(user_id))
+    else:
+        pip.srem(_KEY_APIKS_USER.format(user_id), apik_id)
+    pip.delete(_KEY_APIK.format(apik_id))
     pip.execute()
