@@ -69,7 +69,7 @@ def _get_sec_alerts():
 def dashboard(section, id):
     """Shows the app's dashboard. """
     events, lastkey, alerts, hosts, networks, acls, scans, stats = (None,) * 8
-    vulns, faddnet, faddentry, faddhost = (None,) * 4
+    vulns, buoys, faddnet, faddentry, faddhost = (None,) * 5
     # Checks if the user can create acl entries or manage scans (nets required)
     can_acl, can_manage = (False,) * 2 
     if request.method == 'GET':
@@ -97,6 +97,18 @@ def dashboard(section, id):
                     'B': models.get_entries('B', current_user.id)}
         elif section == const.SEC_SCANS:
             can_manage = models.get_count_user_networks(current_user.id) > 0
+            # buo: id, netname,
+            buoys = [{'id': 1, 'netname': 'Home-wifi', 'status': 'stopped',
+                      'host': '192.168.2.13', 'lastscan': '1/01/2016 - 15:34',
+                      'key' : 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'},
+                     {'id': 2, 'netname': 'Home-eth-0', 'status': 'active',
+                      'host': '192.168.1.253', 'lastscan': '1/01/2016 - 15:34',
+                       'key': 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'},
+                     {'id': 3, 'netname': 'Home-eth-1', 'status': 'disabled',
+                      'host': '192.168.3.3'},
+                     {'id': 4, 'netname': 'Home-eth-2', 'status': 'error',
+                      'host': '192.168.3.3',
+                      'key': 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'}]
         elif section == const.SEC_STATS:
             pass
         else:
@@ -107,7 +119,7 @@ def dashboard(section, id):
                                stats=stats, hosts=hosts, vulns=vulns,
                                faddnet=faddnet, faddentry=faddentry,
                                faddhost=faddhost,
-                               can_manage=can_manage)
+                               can_manage=can_manage, net_buoys=buoys)
     elif request.method == 'POST':
         neterrors, entryerrors, entryneterror, entryincon = (False, ) * 4
         hosterrors = False

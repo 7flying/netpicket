@@ -298,6 +298,23 @@ function getStats() {
     });
 }
 
+/*********
+ * Icons *
+ *********/
+/* Changes icons by class name. If clasOne present sets classTwo and vice-versa.*/
+function changeIcon(element, classOne, classTwo) {
+    if ($(element).hasClass(classOne)) {
+        $(element).removeClass(classOne);
+        $(element).addClass(classTwo);
+    } else {
+        $(element).removeClass(classTwo);
+        $(element).addClass(classOne);
+    }
+}
+
+/***********
+ * General *
+ ***********/
 $(document).ready(function() {
     $('#current-year').text(new Date().getFullYear());
     

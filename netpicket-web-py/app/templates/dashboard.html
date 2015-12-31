@@ -749,8 +749,80 @@
   </div>
 </div>
 {% else %}
-{% for net in net_buoy %}
-{% endfor %}
+{% if net_buoys|length == 0 %}
+{% else %}
+<div class="col-md-12 col-sm-12 col-xs-12">
+  {% for buo in net_buoys|sort(attribute='netname') %}
+  <div class="panel panel-default" id="{{'buoy-'~buo['id']}}">
+    <div class="panel-heading">
+      <span><i class="fa fa-cube"></i></span>
+      <strong>{{buo['netname']}}</strong>
+      {% if buo['status'] == 'active' %}
+      <span class="pull-right text-success"><strong>Active</strong></span>
+      {% elif buo['status'] == 'stopped' %}
+      <span class="pull-right text-danger"><strong>Stopped</strong></span>
+      {% elif buo['status'] == 'disabled' %}
+      <span class="pull-right text-info"><strong>Not deployed</strong></span>
+      {% else %}
+      <span class="pull-right text-muted"><strong>Unknown</strong></span>
+      {% endif %}
+    </div>
+    <div class="panel-body">
+      {% if buo['status'] in ['active', 'stopped'] %}
+      <p><strong>Last scan: </strong>{{buo['lastscan']}}</p>
+      <div>
+        <p><a id="{{'show-key-'~buo['id']}}" data-toggle="collapse"
+              href="{{'#coll-key-'~buo['id']}}" aria-expanded="false"
+              aria-controls="{{'coll-key-'~buo['id']}}"
+              onclick="changeIcon('{{'#icon-collapse-'~buo['id']}}',
+                       'fa-plus-square', 'fa-minus-square');">
+            <i id="{{'icon-collapse-'~buo['id']}}"
+               class="fa fa-plus-square"></i> API key management
+        </a></p>
+      </div>
+      {% elif buo['status'] == 'disabled' %}
+      {% endif %}
+      <!-- info about api key -->
+      <div class="collapse" id="{{'coll-key-'~buo['id']}}">
+        <p>This API key is for private use,
+          <strong>do not share the key.</strong>
+        </p>
+        <div class="well well-sm"><code>{{buo['key']}}</code></div>
+        {% if buo['status'] == 'active' %}
+        <div><p>To delete the API key first stop the buoy.</p>
+        </div>
+        {% elif buo['status'] == 'stopped' %}
+        <div>
+          <button class="btn btn-danger btn-sm" type="button">
+            <i class="fa fa-remove"></i> Delete key</button>
+          <div class="clearfix"></div>
+        </div>
+        <p>
+          <small>-If you delete the key the buoy's status will change to
+            <span class="text-info">'Not deployed'.</span></small>
+          <br>
+          <small>-You can always generate another key later.</small>
+        </p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div><!-- panel body -->
+    <div class="panel-footer">
+      <div class="pull-right">
+        {% if buo['status'] == 'active' %}
+        <button class="btn btn-warning btn-sm" type="button">
+          <i class="fa fa-hand-stop-o"></i> Stop buoy</button>
+        {% elif buo['status'] == 'stopped' %}
+        <button class="btn btn-success btn-sm" type="button">
+          <i class="fa fa-flash"></i> Launch buoy</button>
+        {% endif %}
+      </div>
+      <div class="clearfix"></div>
+    </div>
+  </div><!-- panel -->
+  {% endfor %}
+</div>
+{% endif %}
 {% endif %}
 {% elif section == 'stats' %}
 <br>
