@@ -748,7 +748,7 @@
              id='default')}}">add a network</a> before managing scans.
   </div>
 </div>
-{% else %}
+{% endif %}
 {% if net_buoys|length == 0 %}
 {% else %}
 <div class="col-md-12 col-sm-12 col-xs-12">
@@ -761,7 +761,7 @@
       <span class="pull-right text-success"><strong>Active</strong></span>
       {% elif buo['status'] == 'stopped' %}
       <span class="pull-right text-danger"><strong>Stopped</strong></span>
-      {% elif buo['status'] == 'disabled' %}
+      {% elif buo['status'] == 'not-deployed' %}
       <span class="pull-right text-info"><strong>Not deployed</strong></span>
       {% else %}
       <span class="pull-right text-muted"><strong>Unknown</strong></span>
@@ -769,7 +769,10 @@
     </div>
     <div class="panel-body">
       {% if buo['status'] in ['active', 'stopped'] %}
-      <p><strong>Last scan: </strong>{{buo['lastscan']}}</p>
+      <p><strong>Last scan: </strong>
+        {% if buo['lastscan'] and buo['lastscan']|length != 0 %}
+        {{buo['lastscan']}}{% else %}Not available.{% endif %}
+      </p>
       <div>
         <p><a id="{{'show-key-'~buo['id']}}" data-toggle="collapse"
               href="{{'#coll-key-'~buo['id']}}" aria-expanded="false"
@@ -780,16 +783,16 @@
                class="fa fa-plus-square"></i> API key management
         </a></p>
       </div>
-      {% elif buo['status'] == 'disabled' %}
-      {% endif %}
       <!-- info about api key -->
       <div class="collapse" id="{{'coll-key-'~buo['id']}}">
         <p>This API key is for private use,
           <strong>do not share the key.</strong>
         </p>
         <div class="well well-sm"><code>{{buo['key']}}</code></div>
+        <p>{{buo['netname']}}'s ID is:</p>
+        <div class="well well-sm"><code>{{buo['netid']}}</code></div>
         {% if buo['status'] == 'active' %}
-        <div><p>To delete the API key first stop the buoy.</p>
+        <div class="pull-right"><p>To delete the API key first to stop the buoy.</p>
         </div>
         {% elif buo['status'] == 'stopped' %}
         <div>
@@ -804,6 +807,49 @@
           <small>-You can always generate another key later.</small>
         </p>
         {% endif %}
+      </div>
+      <!-- end info about api key -->
+      {% elif buo['status'] == 'not-deployed' %}
+      <p>To use this buoy first generate an API key.</p>
+      <button class="btn btn-primary btn-sm" type="button">
+        <i class="fa fa-key"></i> Generate API key</button>
+      <p>
+        <small>-After generating the key you can deploy and launch the buoy.
+        </small>
+        <br>
+        <small>-When you generate the key the buoy's status will change to
+          <span class="text-danger">'Stopped'.</span></small>
+      </p>
+      {% endif %}
+      {% if buo['status'] == 'stopped' %}
+      <div>
+        <p><a id="{{'show-key-'~buo['id']}}" data-toggle="collapse"
+              href="{{'#coll-setup-'~buo['id']}}" aria-expanded="false"
+              aria-controls="{{'coll-setup-'~buo['id']}}"
+              onclick="changeIcon('{{'#icon-setup-'~buo['id']}}',
+                       'fa-plus-square', 'fa-minus-square');">
+            <i id="{{'icon-setup-'~buo['id']}}"
+               class="fa fa-plus-square"></i> How to setup the buoy
+        </a></p>
+      </div>
+      <div class="collapse" id="{{'coll-setup-'~buo['id']}}">
+        <ol>
+          <li>Copy <code>netscan.py</code> and <code>requirements.txt</code>
+            to your buoy.</li>
+          <li>Install the dependencies:<br>
+            <code># pip install -r requirements.txt</code><br>
+            <small>Please note that this operation needs admin priviledges.</small>
+          </li>
+          <li>Export the API key:<br>
+            <code>$ export NETPICKET_KEY_&lt;network-id&gt;="&lt;your-key&gt;"</code>
+          </li>
+          <li>Start the buoy:<br>
+            <code># python netscan.py</code><br><small>Please note that this
+              operation needs admin priviledges.</small>
+            </li>
+        </ol>
+        <p>Now you can
+          <strong class="text-success">hit the 'Launch' button!</strong></p>
       </div>
       {% endif %}
     </div><!-- panel body -->
@@ -822,7 +868,6 @@
   </div><!-- panel -->
   {% endfor %}
 </div>
-{% endif %}
 {% endif %}
 {% elif section == 'stats' %}
 <br>

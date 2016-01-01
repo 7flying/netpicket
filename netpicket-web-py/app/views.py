@@ -98,15 +98,15 @@ def dashboard(section, id):
         elif section == const.SEC_SCANS:
             can_manage = models.get_count_user_networks(current_user.id) > 0
             # buo: id, netname,
-            buoys = [{'id': 1, 'netname': 'Home-wifi', 'status': 'stopped',
+            buoys = [{'id': 1, 'netname': 'Home-wifi', 'netid': 3, 'status': 'stopped',
                       'host': '192.168.2.13', 'lastscan': '1/01/2016 - 15:34',
                       'key' : 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'},
-                     {'id': 2, 'netname': 'Home-eth-0', 'status': 'active',
+                     {'id': 2, 'netname': 'Home-eth-0', 'netid': 4,  'status': 'active',
                       'host': '192.168.1.253', 'lastscan': '1/01/2016 - 15:34',
                        'key': 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'},
-                     {'id': 3, 'netname': 'Home-eth-1', 'status': 'disabled',
+                     {'id': 3, 'netname': 'Home-eth-1',  'netid': 5, 'status': 'not-deployed',
                       'host': '192.168.3.3'},
-                     {'id': 4, 'netname': 'Home-eth-2', 'status': 'error',
+                     {'id': 4, 'netname': 'Home-eth-2',  'netid': 7, 'status': 'error',
                       'host': '192.168.3.3',
                       'key': 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'}]
         elif section == const.SEC_STATS:
