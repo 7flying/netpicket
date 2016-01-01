@@ -2,13 +2,13 @@
 """
 This module holds the views of the app.
 """
-import datetime, random, string, gevent, uuid
+import datetime, random, string, gevent
 import config
 
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
 from flask import render_template, redirect, request, url_for, g, json,\
-     Response, abort, flash, jsonify
+     Response, abort, jsonify
 
 from app import app, db, red, login_manager
 from app.auth import OAuthSignIn

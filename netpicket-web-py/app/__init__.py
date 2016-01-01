@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Init Netpicket app.
+"""
 
 import redis, sys
 if 'threading' in sys.modules:
@@ -18,6 +21,10 @@ app = Flask(__name__, static_url_path='')
 Bootstrap(app)
 app.config.from_object('config')
 
+import netscan_v1
+app.register_blueprint(netscan_v1.netscan_api)
+
+
 # SQl Alchemy
 db = SQLAlchemy(app)
 
@@ -34,5 +41,4 @@ login_manager.init_app(app)
 # Mail extension
 
 mail = Mail(app)
-
 import views, errorviews, email, auth, models, const

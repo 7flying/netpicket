@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Buoy's methods.
+"""
 
 import netifaces
 
@@ -60,6 +63,7 @@ def _run_scan(targets, options):
     return 1
 
 
+
 def print_scan(nmap_report):
     """Print the results of the report."""
     print("Starting Nmap {0} ( http://nmap.org ) at {1}".format(
@@ -91,10 +95,10 @@ def print_scan(nmap_report):
                 print pserv
     print nmap_report.summary
 
-
 if __name__ == "__main__":
     #report = _run_scan("127.0.0.1", "-sV")
-    report = _run_scan("192.168.1.*", "-sP")
+    #report = _run_scan("192.168.1.*", "-sP")
+    report = _run_scan("192.168.1.*", '-sn')
     if report:
         print_scan(report)
     else:
