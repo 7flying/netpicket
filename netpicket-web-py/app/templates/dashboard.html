@@ -748,8 +748,6 @@
              id='default')}}">add a network</a> before managing scans.
   </div>
 </div>
-{% endif %}
-{% if net_buoys|length == 0 %}
 {% else %}
 <div class="col-md-12 col-sm-12 col-xs-12">
   {% for buo in net_buoys|sort(attribute='netname') %}
@@ -769,10 +767,16 @@
     </div>
     <div class="panel-body">
       {% if buo['status'] in ['active', 'stopped'] %}
+      {% if buo['status'] == 'active' %}
       <p><strong>Last scan: </strong>
         {% if buo['lastscan'] and buo['lastscan']|length != 0 %}
         {{buo['lastscan']}}{% else %}Not available.{% endif %}
       </p>
+      <p><strong>Buoys IP: </strong>
+        {% if buo['host'] and buo['host']|length != 0 %}
+        {{buo['']}}{% else %}Not available.{% endif %}
+      </p>
+      {% endif %}
       <div>
         <p><a id="{{'show-key-'~buo['id']}}" data-toggle="collapse"
               href="{{'#coll-key-'~buo['id']}}" aria-expanded="false"
@@ -796,7 +800,8 @@
         </div>
         {% elif buo['status'] == 'stopped' %}
         <div>
-          <button class="btn btn-danger btn-sm" type="button">
+          <button class="btn btn-danger btn-sm" type="button"
+                  onclick="deleteAPIKey({{buo['id']}});">
             <i class="fa fa-remove"></i> Delete key</button>
           <div class="clearfix"></div>
         </div>
@@ -811,7 +816,8 @@
       <!-- end info about api key -->
       {% elif buo['status'] == 'not-deployed' %}
       <p>To use this buoy first generate an API key.</p>
-      <button class="btn btn-primary btn-sm" type="button">
+      <button class="btn btn-primary btn-sm" type="button"
+              onclick="generateAPIKey({{buo['id']}});">
         <i class="fa fa-key"></i> Generate API key</button>
       <p>
         <small>-After generating the key you can deploy and launch the buoy.
@@ -856,10 +862,12 @@
     <div class="panel-footer">
       <div class="pull-right">
         {% if buo['status'] == 'active' %}
-        <button class="btn btn-warning btn-sm" type="button">
+        <button class="btn btn-warning btn-sm" type="button"
+                onclick="stopBuoy({{buo['id']}});">
           <i class="fa fa-hand-stop-o"></i> Stop buoy</button>
         {% elif buo['status'] == 'stopped' %}
-        <button class="btn btn-success btn-sm" type="button">
+        <button class="btn btn-success btn-sm" type="button"
+                onclick="launchBuoy({{buo['id']}});"
           <i class="fa fa-flash"></i> Launch buoy</button>
         {% endif %}
       </div>

@@ -10,6 +10,8 @@ STRTIME_DATE = '%Y%m%d'
 STRTIME_TIME = '%-H:%M'
 # Wed 24 Oct
 STRTIME_DAY = '%a %-d %b'
+# date to store when api keys are generated
+STRTIME_KEY_GENERATED = '%d/%m/%Y - %-H:%M'
 
 # Priorities
 PRIORITIES = {0: 'Info', 1: 'Low', 2: 'Medium', 3: 'High'}
@@ -26,6 +28,14 @@ SEC_ACLS = 'wblists'
 SEC_SCANS = 'scans'
 SEC_STATS = 'stats'
 
+# Possible status values for the buoy
+BUOY_ACTIVE = 'active'
+BUOY_STOPPED = 'stopped'
+BUOY_NOTDEP = 'not-deployed'
+BUOY_ERROR = 'error'
+# Possible actions of a buoy
+BUOY_AC_STOP = 'stop'
+BUOY_AC_LAUNCH = 'launch'
 
 # Template alert categories
 ALERT_SUCCESS = 'alert alert-success'

@@ -2,6 +2,8 @@
 """
 App's models and db management.
 """
+import uuid, datetime
+import app.const as const
 from app import db, red
 
 class User(db.Model):
@@ -62,6 +64,10 @@ def get_count_user_networks(user_id):
     length = red.scard(_KEY_NETS_USER.format(str(user_id)))
     return length if length is not None else 0
 
+def get_user_network_ids(user_id):
+    """Returns the netids for the networks of the given user."""
+    return red.smembers(_KEY_NETS_USER.format(str(user_id)))
+
 def get_user_networks(user_id):
     """Returns all the user's networks."""
     keys = red.smembers(_KEY_NETS_USER.format(str(user_id)))
@@ -90,6 +96,7 @@ def set_network(user, name, iface, haddress, speed, sec, address, submask,
     if dns2 != None:
         pip.hset(_KEY_NET.format(key), _ATTR_NET_DNS2, dns2)
     pip.execute()
+    set_api_key(user, key, '', '', const.BUOY_NOTDEP)
 
 def get_network(network_id):
     """Retrieves a network."""
@@ -129,7 +136,7 @@ def delete_network(user_id, net_id):
     for apik in apik_ids:
         tmp = red.hgetall(_KEY_APIK.format(apik))
         if tmp and tmp['network'] == net_id:
-            delete_api_key(user_id, apik)
+            _delete_api_key(user_id, apik)
 
 # --- Events --- #
 # Events are stored in hashes, which hold the event's main properties.
@@ -451,7 +458,7 @@ def delete_host(user_id, host_id):
     red.delete(_KEY_HOST_SET_SERVS.format(host_id))
     pip.execute()
 
-# --- API keys --- #
+# --- API keys / buoys --- #
 # API keys are stored in hashes, including the key, the associated network id
 # and when was created
 # Each user has a set of associated keys
@@ -460,13 +467,19 @@ _KEY_APIK = 'api-key:{0}'
 _ATTR_APIK_NET = 'network'
 _ATTR_APIK_KEY = 'key'
 _ATTR_APIK_GENERATED = 'generated'
-
+_ATTR_APIK_STATUS = 'status'
+_ATTR_APIK_LASTHOST = 'lasthost'
+_ATTR_APIK_LASTSCAND = 'lastscan'
 _KEY_APIKS_USER = 'api-keys:user:{0}'
 
 
 def _get_key_api():
     """Returns an str with the next api-key id."""
     return str(red.incr(_KEY_APIK_ID))
+
+def get_user_api_keys(user_id):
+    """Returns the ids of the keys the user has."""
+    return red.smembers(_KEY_APIKS_USER.format(str(user_id)))
 
 def get_api_key(apik_id):
     """Retrieves an api key."""
@@ -476,7 +489,27 @@ def get_api_key(apik_id):
         tmp['id'] = apik_id
     return tmp
 
-def set_api_key(userid, netid, apikey, generated_at):
+def change_status(key_id, status):
+    """Changes the status of a key."""
+    red.hset(_KEY_APIK.format(str(key_id)), _ATTR_APIK_STATUS, status)
+
+def set_last_host_scan(key_id, last_host, last_scan):
+    """Sets the last host's ip address and scan datetime."""
+    red.hset(_KEY_APIK.format(str(key_id)), _ATTR_APIK_LASTHOST, last_host)
+    red.hset(_KEY_APIK.format(str(key_id)), _ATTR_APIK_LASTSCAND, last_scan)
+
+def generate_api_key(key_id):
+    """Generates an API key, set's staus to stopped."""
+    new_key = uuid.uuid4()
+    time = datetime.datetime.now()
+    pip = red.pipeline()
+    pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_KEY, new_key)
+    pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_GENERATED,
+             time.strftime(const.STRTIME_KEY_GENERATED))
+    pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_STATUS, const.BUOY_STOPPED)
+    pip.execute()
+
+def set_api_key(userid, netid, apikey, generated_at, status):
     """Saves an api key."""
     userid = str(userid)
     netid = str(netid)
@@ -486,9 +519,21 @@ def set_api_key(userid, netid, apikey, generated_at):
     pip.hset(_KEY_APIK.format(key), _ATTR_APIK_KEY, apikey)
     pip.hset(_KEY_APIK.format(key), _ATTR_APIK_NET, netid)
     pip.hset(_KEY_APIK.format(key), _ATTR_APIK_GENERATED, generated_at)
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_STATUS, status)
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_LASTHOST, '')
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_LASTSCAND, '')
     pip.execute()
 
-def delete_api_key(user_id, apik_id):
+def clean_api_key(key_id):
+    """Cleans an api key."""
+    key_id = str(key_id)
+    pip = red.pipeline()
+    pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_KEY, '')
+    pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_GENERATED, '')
+    pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_STATUS, const.BUOY_NOTDEP)
+    pip.execute()
+
+def _delete_api_key(user_id, apik_id):
     """Deletes an api key."""
     user_id = str(user_id)
     apik_id = str(apik_id)

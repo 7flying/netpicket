@@ -162,6 +162,61 @@ function deleteEntry(entryId) {
     })
 }
 
+/***********************************
+ * API key generation and deletion *
+ ***********************************/
+
+function generateAPIKey(apiId) {
+    $.ajax({
+        type: 'POST',
+        url: '/apikey/' + apiId,
+        success: function(data) {
+            if (data.status === 200)
+                window.location.reload();
+        },
+        error: function(data) {
+            
+        }
+    });
+}
+
+function deleteAPIKey(apiId) {
+    $.ajax({
+        type: 'DELETE',
+        url: '/apikey/' + apiId,
+        success: function(data) {
+            if (data.status === 200)
+                window.location.reload();
+        }
+    });
+}
+
+/*******************
+ * Buoy management *
+ *******************/
+
+function stopBuoy(buoId) {
+    $.ajax({
+        type: 'PUT',
+        url: '/buoy/' + buoId + '/stop',
+        success: function(data) {
+            if (data.status === 200)
+                window.location.reload();
+        }
+    });
+}
+
+function launchBuoy(buoId) {
+    $.ajax({
+        type: 'PUT',
+        url: '/buoy/' + buoId + '/launch',
+        success: function(data) {
+            if (data.status === 200)
+                window.location.reload();
+        }
+    });
+}
+
 /*********
  * Stats *
  *********/

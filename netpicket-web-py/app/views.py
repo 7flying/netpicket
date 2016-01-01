@@ -2,7 +2,7 @@
 """
 This module holds the views of the app.
 """
-import datetime, random, string, gevent
+import datetime, random, string, gevent, uuid
 import config
 
 from flask.ext.login import login_user, logout_user, current_user,\
@@ -16,6 +16,7 @@ from app.forms import AddNetworkForm, AddCALEntryForm, AddHostForm
 import app.models as models
 import app.const as const
 import app.cves as cves
+import app.buoymanager as bmanager
 
 @app.route('/')
 def main_page():
@@ -97,18 +98,20 @@ def dashboard(section, id):
                     'B': models.get_entries('B', current_user.id)}
         elif section == const.SEC_SCANS:
             can_manage = models.get_count_user_networks(current_user.id) > 0
-            # buo: id, netname,
-            buoys = [{'id': 1, 'netname': 'Home-wifi', 'netid': 3, 'status': 'stopped',
-                      'host': '192.168.2.13', 'lastscan': '1/01/2016 - 15:34',
-                      'key' : 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'},
-                     {'id': 2, 'netname': 'Home-eth-0', 'netid': 4,  'status': 'active',
-                      'host': '192.168.1.253', 'lastscan': '1/01/2016 - 15:34',
-                       'key': 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'},
-                     {'id': 3, 'netname': 'Home-eth-1',  'netid': 5, 'status': 'not-deployed',
-                      'host': '192.168.3.3'},
-                     {'id': 4, 'netname': 'Home-eth-2',  'netid': 7, 'status': 'error',
-                      'host': '192.168.3.3',
-                      'key': 'ac7f05e1cefa46869dcbb1f7d72ba007e792004a4d7cce5bdd510b5bdf76720e'}]
+            if can_manage:
+                buoys = []
+                for api_id in models.get_user_api_keys(current_user.id):
+                    temp = models.get_api_key(api_id)
+                    if temp:
+                        temp_net = models.get_network(temp['network'])
+                        if temp_net:
+                            buoys.append({'id': api_id,
+                                          'netname': temp_net['name'],
+                                          'netid': temp_net['id'],
+                                          'status': temp['status'],
+                                          'host': temp['lasthost'],
+                                          'lastscan': temp['lastscan'],
+                                          'key': temp['key']})
         elif section == const.SEC_STATS:
             pass
         else:
@@ -223,6 +226,36 @@ def manage_host(hid):
                                cves=alerts, hosts=hosts, vulns=vulns,
                                hostediterrors=hostediterrors, hosterror=hid,
                                faddhost=AddHostForm(prefix='add-host-f'))
+
+@app.route('/apikey/<int:key_id>', methods=['POST', 'DELETE'])
+@login_required
+def manage_key(key_id):
+    """Generates and deletes api keys."""
+    if request.method == 'POST':
+        if str(key_id) in models.get_user_network_ids(current_user.id):
+            models.generate_api_key(key_id)
+            return jsonify({'status': 200})
+        else:
+            return jsonify({'status': 404,
+                            'message': 'User has no such network.'})
+    elif request.method == 'DELETE':
+        if str(key_id) in models.get_user_api_keys(current_user.id):
+            models.clean_api_key(key_id)
+            return jsonify({'status': 200})
+        else:
+            return jsonify({'status': 404,
+                            'message': 'User has no such key.'})
+
+@app.route('/buoy/<int:buo_id>/<action>', methods=['PUT'])
+@login_required
+def manage_buoy(buo_id, action):
+    """Starts or stops the given buoy."""
+    if action in [const.BUOY_AC_LAUNCH, const.BUOY_AC_STOP] and \
+        str(buo_id) in models.get_user_api_keys(current_user.id):
+        bmanager.set_action(buo_id, action)
+        return jsonify({'status': 200})
+    else:
+        return jsonify({'status': 404, 'message': 'Wrong params.'})
 
 @login_manager.user_loader
 def load_user(id):
