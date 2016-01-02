@@ -10,7 +10,7 @@ import gevent
 from gevent import monkey
 monkey.patch_all()
 
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -20,9 +20,6 @@ from flask.ext.login import LoginManager
 app = Flask(__name__, static_url_path='')
 Bootstrap(app)
 app.config.from_object('config')
-
-import netscan_v1
-app.register_blueprint(netscan_v1.netscan_api)
 
 
 # SQl Alchemy
@@ -41,4 +38,7 @@ login_manager.init_app(app)
 # Mail extension
 
 mail = Mail(app)
-import views, errorviews, email, auth, models, const
+import views, errorviews, email, auth, models, const, netscan_v1
+
+#import netscan_v1
+app.register_blueprint(netscan_v1.netscan_api)

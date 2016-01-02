@@ -3,6 +3,9 @@
 Holds the app's constants.
 """
 
+# Timeline pub/sub channel
+CHAN_TIMELINE = 'timeline'
+
 ## Date-time formats
 # For instance, 20151121
 STRTIME_DATE = '%Y%m%d'
@@ -11,7 +14,7 @@ STRTIME_TIME = '%-H:%M'
 # Wed 24 Oct
 STRTIME_DAY = '%a %-d %b'
 # date to store when api keys are generated
-STRTIME_KEY_GENERATED = '%d/%m/%Y - %-H:%M'
+STRTIME_KEY_GENERATED = '%d/%m/%Y - %H:%M'
 
 # Priorities
 PRIORITIES = {0: 'Info', 1: 'Low', 2: 'Medium', 3: 'High'}

@@ -472,6 +472,11 @@ _ATTR_APIK_LASTHOST = 'lasthost'
 _ATTR_APIK_LASTSCAND = 'lastscan'
 _KEY_APIKS_USER = 'api-keys:user:{0}'
 
+_KEY_UUID_APIK = 'apik-of-uuid:{0}'
+
+def apik_of_uuid(uuid_):
+    """Given a uuid (key) retrieves the db id"""
+    return red.get(_KEY_UUID_APIK.format(uuid_))
 
 def _get_key_api():
     """Returns an str with the next api-key id."""
@@ -500,14 +505,17 @@ def set_last_host_scan(key_id, last_host, last_scan):
 
 def generate_api_key(key_id):
     """Generates an API key, set's staus to stopped."""
+    key_id = str(key_id)
     new_key = uuid.uuid4()
     time = datetime.datetime.now()
     pip = red.pipeline()
+    pip.set(_KEY_UUID_APIK.format(new_key), key_id)
     pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_KEY, new_key)
     pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_GENERATED,
              time.strftime(const.STRTIME_KEY_GENERATED))
     pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_STATUS, const.BUOY_STOPPED)
     pip.execute()
+    set_action_buoy(key_id, const.BUOY_AC_STOP)
 
 def set_api_key(userid, netid, apikey, generated_at, status):
     """Saves an api key."""
@@ -527,6 +535,9 @@ def set_api_key(userid, netid, apikey, generated_at, status):
 def clean_api_key(key_id):
     """Cleans an api key."""
     key_id = str(key_id)
+    tmp = red.hgetall(_KEY_APIK.format(key_id))
+    red.delete(_KEY_BUOYACTION.format(key_id))
+    red.delete(_KEY_UUID_APIK.format(tmp['key']))
     pip = red.pipeline()
     pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_KEY, '')
     pip.hset(_KEY_APIK.format(key_id), _ATTR_APIK_GENERATED, '')
@@ -537,6 +548,9 @@ def _delete_api_key(user_id, apik_id):
     """Deletes an api key."""
     user_id = str(user_id)
     apik_id = str(apik_id)
+    # Delete uuid to key
+    tmp = red.hgetall(_KEY_APIK.format(apik_id))
+    red.delete(_KEY_UUID_APIK.format(tmp['key']))
     pip = red.pipeline()
     if pip.scard(_KEY_APIKS_USER.format(user_id)) == 1:
         pip.delete(_KEY_APIKS_USER.format(user_id))
@@ -544,3 +558,29 @@ def _delete_api_key(user_id, apik_id):
         pip.srem(_KEY_APIKS_USER.format(user_id), apik_id)
     pip.delete(_KEY_APIK.format(apik_id))
     pip.execute()
+    # delete also the orders a buoy must perform
+    red.delete(_KEY_BUOYACTION.format(apik_id))
+
+# --- Buoy orders --- #
+_KEY_BUOYACTION = 'action:buoy:{0}'
+_ATTR_BUOYACTION_TIME = 'time'
+_ATTR_BUOYACTION_ACTION = 'action'
+
+def set_action_buoy(buoy_id, action, ignore_now=False):
+    """Sets the following action of a buoy"""
+    buoy_id = str(buoy_id)
+    red.hset(_KEY_BUOYACTION.format(buoy_id), _ATTR_BUOYACTION_ACTION, action)
+    if ignore_now:
+        red.hset(_KEY_BUOYACTION.format(buoy_id), _ATTR_BUOYACTION_TIME, '')
+    else:
+        now = datetime.datetime.now()
+        red.hset(_KEY_BUOYACTION.format(buoy_id), _ATTR_BUOYACTION_TIME,
+                 now.strftime(const.STRTIME_KEY_GENERATED))
+
+def get_action_buoy(buoy_id):
+    """Gets the action a buoy must complete"""
+    temp = red.hgetall(_KEY_BUOYACTION.format(str(buoy_id)))
+    if temp:
+        temp['id'] = str(buoy_id)
+    return temp
+

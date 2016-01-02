@@ -252,7 +252,7 @@ def manage_buoy(buo_id, action):
     """Starts or stops the given buoy."""
     if action in [const.BUOY_AC_LAUNCH, const.BUOY_AC_STOP] and \
         str(buo_id) in models.get_user_api_keys(current_user.id):
-        bmanager.set_action(buo_id, action)
+        bmanager.set_action(buo_id, action, now=True)
         return jsonify({'status': 200})
     else:
         return jsonify({'status': 404, 'message': 'Wrong params.'})
@@ -279,7 +279,7 @@ def timeline_event_stream(user_id):
     """Handles timeline event notifications."""
     print " [INFO] timeline get event stream"
     pubsub = red.pubsub()
-    pubsub.subscribe('timeline')
+    pubsub.subscribe(const.CHAN_TIMELINE)
     while True:
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
         # 'priority': 1, 'text': 'Hello', 'net' : 1}
