@@ -284,7 +284,8 @@ def timeline_event_stream(user_id):
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
         # 'priority': 1, 'text': 'Hello', 'net' : 1, 'netname': 'Home 2'}
         mess = pubsub.get_message()
-        if config.RANDOM_TIMELINE:
+        print mess
+        if False:
             if random.randint(0, 1) == 0:
                 now = datetime.datetime.now()
                 text = ''.join(random.choice(string.letters) for _ in range(15))

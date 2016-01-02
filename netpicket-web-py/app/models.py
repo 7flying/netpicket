@@ -120,7 +120,7 @@ def delete_network(user_id, net_id):
         pip.delete(_KEY_EVENT_USER.format(event['id'], user_id))
     pip.delete(_KEY_EVENTS_USER_NET.format(user_id, net_id)) # user-network
     # Delete associated entries on wb lists
-    for entry in _get_entries_network(net_id, user_id):
+    for entry in get_entries_network(net_id):
         # delete network from the entry, if it has one network delete entry
         if red.scard(_KEY_ENTRY_SET_NETS.format(entry['id'])) == 1:
             pip.delete(_KEY_ENTRY.format(entry['id']))
@@ -282,14 +282,11 @@ def _is_entry_consistent(user_id, typ, mac, nets):
                         return False
     return True
 
-def _get_entries_network(net_id, user_id):
-    """Gets the entries with the given network."""
+def get_entries_network(net_id):
+    """Gets the entries in the given network."""
     net_id = str(net_id)
-    user_id = str(user_id)
     entries = red.smembers(_KEY_NET_SET_ENTRIES.format(net_id))
-    ret = []
-    for entry in entries:
-        ret.append(get_entry(entry))
+    ret = [get_entry(x) for x in entries]
     return ret
 
 def delete_entry(user_id, entry_id):

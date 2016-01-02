@@ -23,4 +23,4 @@ OAUTH_CREDENTIALS = {'google': {'id': GOOGLE_LOGIN_CLIENT_ID,
                                 'secret': GOOGLE_LOGIN_CLIENT_SECRET}}
 
 # Debugging
-RANDOM_TIMELINE = False
+RANDOM_TIMELINE = True
