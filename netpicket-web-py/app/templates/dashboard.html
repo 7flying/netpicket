@@ -840,17 +840,15 @@
       </div>
       <div class="collapse" id="{{'coll-setup-'~buo['id']}}">
         <ol>
-          <li>Copy <code>netscan.py</code> and <code>requirements.txt</code>
+          <li>Copy <code>netscanner.py</code> and <code>requirements.txt</code>
             to your buoy.</li>
           <li>Install the dependencies:<br>
             <code># pip install -r requirements.txt</code><br>
             <small>Please note that this operation needs admin priviledges.</small>
           </li>
-          <li>Export the API key:<br>
-            <code>$ export NETPICKET_KEY_&lt;network-id&gt;="&lt;your-key&gt;"</code>
-          </li>
           <li>Start the buoy:<br>
-            <code># python netscan.py</code><br><small>Please note that this
+            <code># python netscanner.py &lt;API_KEY&gt; &lt;network_to_scan&gt;</code><br>
+            <small>Please note that this
               operation needs admin priviledges.</small>
             </li>
         </ol>

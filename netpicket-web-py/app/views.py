@@ -152,7 +152,7 @@ def dashboard(section, id):
                 current_user.id)
             can_acl = models.get_count_user_networks(current_user.id) > 0
             networks = faddentry.networks.data
-            mac = faddentry.mac.data
+            mac = (faddentry.mac.data).lower()
             list_type = faddentry.type.data
             if faddentry.validate_on_submit():
                 entryincon = models.save_entry(current_user.id, list_type,
@@ -282,19 +282,23 @@ def timeline_event_stream(user_id):
     pubsub.subscribe(const.CHAN_TIMELINE)
     while True:
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
-        # 'priority': 1, 'text': 'Hello', 'net' : 1}
+        # 'priority': 1, 'text': 'Hello', 'net' : 1, 'netname': 'Home 2'}
         mess = pubsub.get_message()
         if config.RANDOM_TIMELINE:
             if random.randint(0, 1) == 0:
                 now = datetime.datetime.now()
                 text = ''.join(random.choice(string.letters) for _ in range(15))
                 mess = {}
+                netid = str(random.choice(list(
+                    models.get_user_network_ids(user_id))))
+                net = models.get_network(netid)
                 mess['data'] = {'date': now.strftime(const.STRTIME_DATE),
                                 'time': now.strftime(const.STRTIME_TIME),
                                 'day': now.strftime(const.STRTIME_DAY),
                                 'priority': const.PRIORITY_COLOUR[
                                     random.randint(0, 3)],
-                                'text': text, 'netid': '1'}
+                                'text': text, 'netid': netid,
+                                'netname': net['name']}
         if mess and mess.get('data') != 1L and mess.get('data').get(
                 'text') != None:
             # Store on the db, and send it to the client

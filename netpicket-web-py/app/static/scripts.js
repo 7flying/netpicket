@@ -56,7 +56,9 @@ function timelineSSE() {
             default:
                 desc += "text-info\"><i class=\"fa fa-info-circle\"></i> ";
             }
-            desc += (data.text + "</td>");
+            desc += (data.text
+                     + "</td><td><a href=\"/dashboard/networks/default#net-"
+                     + data.netid + "\">" + data.netname + "</a></td>");
             var row = "<tr>" + hour + desc + "</tr>";
             // check if it is the first event of the day
             var table = document.getElementById(data.date + '-table');
@@ -374,8 +376,8 @@ $(document).ready(function() {
     $('#current-year').text(new Date().getFullYear());
     
     if (window.location.href.indexOf('dashboard') > -1) {
-        // if (document.getElementById('updated-ago') != null)
-        //     timelineSSE();
+         if (document.getElementById('updated-ago') != null)
+             timelineSSE();
         if (window.location.href.indexOf('stats') > -1) {
             getStats();
         }
