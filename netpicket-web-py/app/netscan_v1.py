@@ -2,16 +2,15 @@
 """
 REST api consumed by the buoys.
 """
-import datetime
+import datetime, json, base64, ast
 from flask import jsonify, request, Blueprint
-import models, const, wbenforcer
+from app import models, const, wbenforcer
 
 netscan_api = Blueprint('netscan_api', __name__, url_prefix='/netscan/v1')
 
 @netscan_api.route('/work/<uuid>', methods=['GET', 'POST'])
 def work(uuid):
     """The buoys request work and post work results to this method."""
-    print " [NETSCAN] got: ", uuid
     buoy_id = models.apik_of_uuid(uuid)
     if request.method == 'GET':
         action = models.get_action_buoy(buoy_id)
@@ -26,25 +25,20 @@ def work(uuid):
                 date_obj = datetime.datetime.strptime(
                     action['time'], const.STRTIME_KEY_GENERATED)
                 now = datetime.datetime.now()
-                if (now-date_obj).total_seconds() / 60 >= 1: # TODO
+                if (now-date_obj).total_seconds() / 60 >= const.SCAN_INTERVAL:
                     time = 0
                     # Update when the last action mas made (now)
                     models.set_action_buoy(buoy_id, const.BUOY_AC_LAUNCH)
-            print " [GET NETSCAN] ret:", {'status': 200,
-                                          'order': action['action'],
-                                          'time': time}
             return jsonify({'status': 200, 'order': action['action'],
                             'time': time})
         elif action and action['action'] == const.BUOY_AC_STOP:
-            print " [GET NETSCAN] ret:", {'status': 200,
-                                          'order': action['action']}
             return jsonify({'status': 200, 'order': action['action']})
         else:
-            print " [GET NETSCAN] ret:", {'status': 400}
             return jsonify({'status': 404})
     elif request.method == 'POST':
-        content = request.get_json()
-        print " [POST NETSCAN ]", content
-        wbenforcer.generate_alerts(buoy_id, content)
+        djson = request.get_json()
+        decodedjson = base64.b64decode(djson['content'])
+        data_scan = ast.literal_eval(decodedjson)
+        wbenforcer.generate_alerts(buoy_id, data_scan)
         return jsonify({'status': 200, 'message': 'Got it!'})
 

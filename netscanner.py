@@ -3,6 +3,7 @@
 Buoy's scanning process.
 """
 import threading, sys, datetime, Queue, sched, time, requests, urllib, json
+import base64
 
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
@@ -58,7 +59,8 @@ class NetScanner(object):
         if result:
             # send results to server
             headers = {'Content-Type': 'application/json'}
-            response = requests.post(self.url, data=json.dumps(result),
+            content = {'content' : base64.b64encode(str(result))}
+            response = requests.post(self.url, data=json.dumps(content),
                                      headers=headers)
             if response.status_code != 200:
                 NetScanner._RESULTS.put(result)
@@ -74,7 +76,7 @@ class NetScanner(object):
                     self._launch_scanner()
             # Prepare the scheduler again to keep calling this method because
             # we have received a 200
-            scheduler.enter(1 * 30, 1, self._gateway, (scheduler,))
+            scheduler.enter(1 * 40, 1, self._gateway, (scheduler,))
         else:
             print " INFO: Netscanner shutting down. API key has been deleted."
 
@@ -143,9 +145,9 @@ class NmapScanner(object):
                 tmphost['mac'] = host.mac
                 tmphost['mac-vendor'] = host.vendor
                 # TODO other options may have more data, parse such data here
-                print tmphost
                 ret.append(tmphost)
         data['hosts'] = ret
+        print "INFO: scan done at {0}".format(now.strftime(DATETIME_FORMAT))
         return data
 
 if __name__ == '__main__':
