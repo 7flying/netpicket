@@ -463,6 +463,7 @@ _KEY_APIK_ID = 'api-key-id-auto:'
 _KEY_APIK = 'api-key:{0}'
 _ATTR_APIK_NET = 'network'
 _ATTR_APIK_KEY = 'key'
+_ATTR_APIK_USER = 'userid'
 _ATTR_APIK_GENERATED = 'generated'
 _ATTR_APIK_STATUS = 'status'
 _ATTR_APIK_LASTHOST = 'lasthost'
@@ -521,6 +522,7 @@ def set_api_key(userid, netid, apikey, generated_at, status):
     key = _get_key_api()
     pip = red.pipeline()
     pip.sadd(_KEY_APIKS_USER.format(userid), key)
+    pip.hset(_KEY_APIK.format(key), _ATTR_APIK_USER, userid)
     pip.hset(_KEY_APIK.format(key), _ATTR_APIK_KEY, apikey)
     pip.hset(_KEY_APIK.format(key), _ATTR_APIK_NET, netid)
     pip.hset(_KEY_APIK.format(key), _ATTR_APIK_GENERATED, generated_at)

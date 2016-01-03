@@ -2,7 +2,7 @@
 """
 This module holds the views of the app.
 """
-import datetime, random, string, gevent
+import datetime, random, string, gevent, ast
 import config
 
 from flask.ext.login import login_user, logout_user, current_user,\
@@ -10,7 +10,7 @@ from flask.ext.login import login_user, logout_user, current_user,\
 from flask import render_template, redirect, request, url_for, g, json,\
      Response, abort, jsonify
 
-from app import app, db, red, login_manager
+from app import app, db, red, red_p, login_manager
 from app.auth import OAuthSignIn
 from app.forms import AddNetworkForm, AddCALEntryForm, AddHostForm
 import app.models as models
@@ -278,13 +278,11 @@ def before_request():
 def timeline_event_stream(user_id):
     """Handles timeline event notifications."""
     print " [INFO] timeline get event stream"
-    pubsub = red.pubsub()
-    pubsub.subscribe(const.CHAN_TIMELINE)
+    red_p.subscribe(const.CHAN_TIMELINE)
     while True:
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
         # 'priority': 1, 'text': 'Hello', 'net' : 1, 'netname': 'Home 2'}
-        mess = pubsub.get_message()
-        print mess
+        mess = red_p.get_message()
         if False:
             if random.randint(0, 1) == 0:
                 now = datetime.datetime.now()
@@ -300,14 +298,11 @@ def timeline_event_stream(user_id):
                                     random.randint(0, 3)],
                                 'text': text, 'netid': netid,
                                 'netname': net['name']}
-        if mess and mess.get('data') != 1L and mess.get('data').get(
-                'text') != None:
-            # Store on the db, and send it to the client
-            models.save_event(user_id, mess['data']['netid'],
-                              mess['data']['text'], mess['data']['date'],
-                              mess['data']['day'], mess['data']['time'],
-                              mess['data']['priority'])
-            yield 'data: ' + json.dumps(mess.get('data')) + '\n\n'
+        if mess:
+            print mess
+            mess = ast.literal_eval(mess['data'])
+            # Send it to the client
+            yield 'data: ' + json.dumps(mess) + '\n\n'
         gevent.sleep(5)
 
 @app.route('/timeline/', methods=['GET', 'POST'])

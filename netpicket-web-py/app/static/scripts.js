@@ -376,8 +376,9 @@ $(document).ready(function() {
     $('#current-year').text(new Date().getFullYear());
     
     if (window.location.href.indexOf('dashboard') > -1) {
-         if (document.getElementById('updated-ago') != null)
+        if (document.getElementById('updated-ago') != null) {
              timelineSSE();
+        }
         if (window.location.href.indexOf('stats') > -1) {
             getStats();
         }

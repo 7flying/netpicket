@@ -11,7 +11,6 @@ import app.const as const
 
 def generate_alerts(apik, buoy_content):
     """Generates alerts, warnings and info messages."""
-    queue = red.pubsub()
     buoy = models.get_api_key(apik)
     entries_network = models.get_entries_network(buoy['network'])
     scantime = datetime.datetime.strptime(buoy_content['scan-time'],
@@ -23,6 +22,7 @@ def generate_alerts(apik, buoy_content):
     # needs 'text' and 'priority'
     message = {'date': date, 'time': time, 'day': day,
                'netid': net['id'], 'netname': net['name']}
+    print " [INFO] enforcer start with ups"
     for host in buoy_content['up']:
         found = False
         for entry in entries_network:
@@ -39,7 +39,10 @@ def generate_alerts(apik, buoy_content):
                             host['address'], host['mac'])
                     message['text'] = text
                     message['priority'] = 'R'
-                    print " [RED] send", message
+                    models.save_event(buoy['userid'], message['netid'],
+                                      message['text'], message['date'],
+                                      message['day'], message['time'],
+                                      message['priority'])
                     red.publish(const.CHAN_TIMELINE, message)
                 else:
                     # info: B
@@ -51,7 +54,10 @@ def generate_alerts(apik, buoy_content):
                             host['address'], host['mac'])
                     message['text'] = text
                     message['priority'] = 'B'
-                    print " [RED] send", message
+                    models.save_event(buoy['userid'], message['netid'],
+                                      message['text'], message['date'],
+                                      message['day'], message['time'],
+                                      message['priority'])
                     red.publish(const.CHAN_TIMELINE, message)
                 break
         if not found:
@@ -66,8 +72,12 @@ def generate_alerts(apik, buoy_content):
                 text = 'Unknonw host {0} connected'.format(host['address'])
             message['text'] = text
             message['priority'] = 'O'
-            print " [RED] send", message
+            models.save_event(buoy['userid'], message['netid'],
+                                      message['text'], message['date'],
+                                      message['day'], message['time'],
+                                      message['priority'])
             red.publish(const.CHAN_TIMELINE, message)
+    print " [INFO] enforcer start with downs"
     for hostmac in buoy_content['down']:
         found = False
         for entry in entries_network:
@@ -78,14 +88,20 @@ def generate_alerts(apik, buoy_content):
                     text = 'Blacklisted host ({0}) disconnected'.format(hostmac)
                     message['text'] = text
                     message['priority'] = 'R'
-                    print " [RED] send", message
+                    models.save_event(buoy['userid'], message['netid'],
+                                      message['text'], message['date'],
+                                      message['day'], message['time'],
+                                      message['priority'])
                     red.publish(const.CHAN_TIMELINE, message)
                 else:
                     # info: B
                     text = 'Known host ({0}) disconnected'.format(hostmac)
                     message['text'] = text
                     message['priority'] = 'B'
-                    print " [RED] send", message
+                    models.save_event(buoy['userid'], message['netid'],
+                                      message['text'], message['date'],
+                                      message['day'], message['time'],
+                                      message['priority'])
                     red.publish(const.CHAN_TIMELINE, message)
                 break
         if not found:
@@ -93,6 +109,8 @@ def generate_alerts(apik, buoy_content):
             text = 'Unknonw host ({0}) disconnected'.format(hostmac)
             message['text'] = text
             message['priority'] = 'O'
-            print " [RED] send", message
+            models.save_event(buoy['userid'], message['netid'],
+                                      message['text'], message['date'],
+                                      message['day'], message['time'],
+                                      message['priority'])
             red.publish(const.CHAN_TIMELINE, message)
-    print " [RED] end"

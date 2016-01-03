@@ -5,6 +5,8 @@ Holds the app's constants.
 
 # Timeline pub/sub channel
 CHAN_TIMELINE = 'timeline'
+# Scan interval
+SCAN_INTERVAL = 7
 
 ## Date-time formats
 # For instance, 20151121
