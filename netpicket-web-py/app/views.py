@@ -132,9 +132,9 @@ def dashboard(section, id):
                 ipaddress = faddnet.ipaddress.data
                 models.set_network(current_user.id, nname, '', '', '', '',
                                    ipaddress, '', '', '')
-                networks = models.get_user_networks(current_user.id)
             else:
                 neterrors = True
+            networks = models.get_user_networks(current_user.id)
         elif section == const.SEC_ALERTS:
             faddhost = AddHostForm(request.form, prefix='add-host-f')
             if faddhost.validate_on_submit():
@@ -144,9 +144,9 @@ def dashboard(section, id):
                 hservs_clean = [x.strip() for x in hservices]
                 models.set_host(current_user.id, hname.strip(), hservs_clean)
                 hosts = models.get_user_hosts(current_user.id)
-                alerts, hosts, vulns = _get_sec_alerts()
             else:
                 hosterrors = True
+            alerts, hosts, vulns = _get_sec_alerts()
         elif section == const.SEC_ACLS:
             faddentry = AddCALEntryForm(request.form, prefix='add-entry-f').new(
                 current_user.id)
@@ -154,15 +154,15 @@ def dashboard(section, id):
             networks = faddentry.networks.data
             mac = (faddentry.mac.data).lower()
             list_type = faddentry.type.data
-            if faddentry.validate_on_submit():
+            if faddentry.validate_on_submit() and networks and len(networks) > 0:
                 entryincon = models.save_entry(current_user.id, list_type,
                                               '', mac, '', networks)
                 entryincon = not entryincon # the method returned consistent
-                acls = {'W': models.get_entries('W', current_user.id),
-                        'B': models.get_entries('B', current_user.id)}
             else:
                 entryneterror = len(networks) == 0
                 entryerrors = True
+            acls = {'W': models.get_entries('W', current_user.id),
+                    'B': models.get_entries('B', current_user.id)}
         return render_template('dashboard.html', section=section,
                                events=events, lastkey=lastkey,
                                cves=alerts, nets=networks, acls=acls,

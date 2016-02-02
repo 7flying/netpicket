@@ -21,6 +21,11 @@ img.center {
     display: block;
     margin: 0 auto;
 }
+.simple-center {
+    padding-top: 20px;
+    position: relative;
+    text-align: center;
+}
 /* --- Footer --- */
 .doc-footer {
     border-top: 1px solid #ecf0f1;

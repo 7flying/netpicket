@@ -96,7 +96,15 @@
       We haven't registered any activity.
     </div>
     {% else %}
-    <h4><small><strong>UPDATED AT: </strong>
+    <div class="simple-center">
+      Jump to:
+      <ul class="list-inline">
+        {% for date in events.keys()|sort(reverse=True) %}
+        <li><a href="{{'#' ~ date}}">{{events[date][0]['day']}}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <h4><small><strong>Latest update: </strong>
         <strong id="updated-ago">{{events[lastkey][0]['day']
           ~ ' ' ~ events[lastkey][0]['time']}}</strong>
     </small></h4>
@@ -150,7 +158,7 @@
     </div>
     {% endif %}  
     <div class="col-md-10">
-      <h4>My networks</h4>
+      <h3>My networks</h3>
     </div>
     <div class="col-md-2">
       <button id="button-add-net"
@@ -182,7 +190,7 @@
         You don't have networks, please add one.
       </div>
     </div>
-    {% if nets|length == 0 %}
+    {% if not nets or nets|length == 0 %}
     <div class="col-md-12">
       <div class="alert alert-info" role="alert">
         <span class="glyphicon glyphicon-exclamation-sign"
@@ -295,7 +303,7 @@
     </div>
     {% endif %} 
     <div class="col-md-10">
-      <h4>Hosts' status</h4>
+      <h3>Hosts' status</h3>
     </div>
     <div class="col-md-2">
       <button id="button-add-host"
@@ -471,7 +479,7 @@
     </div>
     {% endif %}
     <div class="col-md-12">
-      <h4>Latest CVE details</h4>
+      <h3>Latest CVE details</h3>
     </div>
     {% if cves is none or cves|length == 0 %}
     <div class="col-md-12">
@@ -540,7 +548,7 @@
 </div>
 {% endif %}
 <div class="col-md-10">
-  <h4>My white &amp; black lists</h4>
+  <h3>My white &amp; black lists</h3>
 </div>
 <div class="col-md-2">
   <button id="button-add-entry"
@@ -641,7 +649,7 @@
             {% for entry in acls['W']|sort(attribute='host') %}
             <tr id="{{'entry-'~entry['id']}}">
               <td>{{entry['host'] if entry['host'] is not none and entry['host']|length > 0 else '-'}}</td>
-                <td>{{entry['mac']}}</td>
+                <td>{{entry['mac']|upper}}</td>
                 {% if entry['address'] is none or entry['address']|length == 0 %}
 <td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
 <td><ul class="list-inline">
@@ -709,23 +717,29 @@
             {% for entry in acls['B']|sort(attribute='host') %}
             <tr id="{{'entry-'~entry['id']}}">
               <td>{{entry['host'] if entry['host'] is not none and entry['host']|length > 0 else '-'}}</td>
-<td>{{entry['mac']}}</td>
-{% if entry['address'] is none or entry['address']|length == 0 %}
-<td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
-<td><ul class="list-inline">
-    {% for id, name in entry['nets'] %} 
-    <li><a href="{{url_for('dashboard',
-                 section='networks', id='default')}}#net-{{id}}">{{name}}</a></li>
-    {% endfor %}
-</ul></td>
-<td><button class="btn btn-warning btn-sm" type="button"
-            onclick="deleteEntry({{entry['id']}})">
-    <span class="fa fa-remove"></span> Delete entry
-</button></td>
-</tr>
-{% endfor %}
-{% endif %}
-</tbody>
+              <td>{{entry['mac']|upper}}</td>
+              {% if entry['address'] is none or entry['address']|length == 0 %}
+              <td>-</td>{% else %}<td>{{entry['address']}}</td>{% endif %}
+              <td>
+                  <ul class="list-inline">
+                    {% for id, name in entry['nets'] %} 
+                    <li><a href="{{url_for('dashboard',
+                                 section='networks', id='default')}}#net-{{id}}">
+                        {{name}}
+                      </a>
+                    </li>
+                    {% endfor %}
+                  </ul>
+              </td>
+              <td><button class="btn btn-warning btn-sm" type="button"
+                          onclick="deleteEntry({{entry['id']}})">
+                  <span class="fa fa-remove"></span> Delete entry
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+          </tbody>
 </table>
 </div>
 </div>
@@ -736,7 +750,7 @@
 {% elif section == 'scans' %}
 <br>
 <div class="col-md-12">
-  <h4>Scans</h4>
+  <h3>Scans</h3>
 </div>
 {% if not can_manage %}
 <div class="col-md-12">
@@ -878,10 +892,10 @@
 {% elif section == 'stats' %}
 <br>
 <div class="col-md-12">
-  <h4>Weekly statistics</h4>
+  <h3>Weekly statistics</h3>
 </div>
 <div class="col-md-6">
-  <h5>Events by type</h5>
+  <h4>Events by type</h4>
   <div id="ned-comp" class="alert alert-info" role="alert"
        style="display: none">
     <strong>Ups!</strong> We haven't events to show the type distribution.
@@ -896,7 +910,7 @@
   </div>  
 </div>
 <div class="col-md-6">
-  <h5>Events by network</h5>
+  <h4>Events by network</h4>
   <div id="ned-comp" class="alert alert-info" role="alert"
        style="display: none">
     <strong>Ups!</strong> We haven't events to show the distribution.
@@ -911,10 +925,10 @@
   </div>  
 </div>
 <div class="col-md-12">
-  <h4>Daily statistics</h4>
+  <h3>Daily statistics</h3>
 </div>
 <div class="col-md-6">
-  <h5>Event types by day - Bar chart</h5>
+  <h4>Event types by day - Bar chart</h4>
   <div id="ned-comp" class="alert alert-info" role="alert"
        style="display: none">
     <strong>Ups!</strong> We haven't events to show the distribution.
@@ -927,7 +941,7 @@
   </div>  
 </div>
 <div class="col-md-6">
-  <h5>Event types by day - Line chart</h5>
+  <h4>Event types by day - Line chart</h4>
   <div id="ned-comp" class="alert alert-info" role="alert"
        style="display: none">
     <strong>Ups!</strong> We haven't events to show the distribution.
@@ -940,7 +954,7 @@
   </div>  
 </div>
 <div class="col-md-12">
-  <h5>Events by network</h5>
+  <h4>Events by network</h4>
   <div id="ned-comp" class="alert alert-info" role="alert"
        style="display: none">
     <strong>Ups!</strong> We haven't events to show the distribution.

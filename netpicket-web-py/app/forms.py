@@ -14,7 +14,7 @@ class AddNetworkForm(Form):
                                         message='From 1 to 30 characters.')],
                      description='Display name.')
     ipaddress = TextField("Buoy's IP address", [validators.IPAddress(
-        message='IPv4 address.'), validators.Required()],
+        message='IPv4 address required.'), validators.Required()],
         description='IP address of the buoy which will scan the network.')
     submit = SubmitField('Save')
 
@@ -58,8 +58,8 @@ class AddHostForm(Form):
    # mac = TextField('MAC address', [validators.MacAddress(),
    #                                 validators.Required()])
     services = TextField('Services to monitor',
-                         [validators.Length(min=1, max=300,
-                                            message='Max 300 characters.')],
+                         [validators.Length(min=1, max=140,
+                                            message='From 1 to 140 characters.')],
                          description="""Comma separated values.
                          Please choose meaningful names like
                          'Firefox' and 'Nginx'.""")
