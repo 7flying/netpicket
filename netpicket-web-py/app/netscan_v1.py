@@ -2,7 +2,7 @@
 """
 REST api consumed by the buoys.
 """
-import datetime, json, base64, ast
+import datetime, base64, ast
 from flask import jsonify, request, Blueprint
 from app import models, const, wbenforcer
 

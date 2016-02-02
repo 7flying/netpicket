@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Buoy's scanning process.
+Requires api key and network to scan as parameters.
 """
 import threading, sys, datetime, Queue, sched, time, requests, urllib, json
 import base64
@@ -9,6 +10,8 @@ from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 
 DATETIME_FORMAT = '%d/%m/%Y - %-H:%M'
+
+LOCAL_TEST = False
 
 class NetScanner(object):
     """Network scanner"""
@@ -32,20 +35,23 @@ class NetScanner(object):
         if success:
             results = {'up': [], 'down': [], 'scan-time': data['scan-time']}
             for host in data['hosts']:
-                prev = False
                 results['up'].append(host)
                 if host['mac'] and len(host['mac']) > 0:
                     if host['mac'] in self.online:
                         self.online.remove(host['mac'])
-                        prev = True
-                if not prev and host['address'] in self.online:
-                    self.online.remove(host['address'])
+                else:
+                    if host['address'] in self.online:
+                        self.online.remove(host['address'])
+            # If not in the lastest scan they are down
             results['down'] = self.online
+            self.online = []
             for host in results['up']:
                 if host['mac'] and len(host['mac']) > 0:
                     self.online.append(host['mac'])
                 else:
                     self.online.append(host['address'])
+            print "Currently up:", results['up']
+            print "Currently down:", results['down']
             NetScanner._RESULTS.put(results)
 
     def _gateway(self, scheduler):
@@ -60,25 +66,38 @@ class NetScanner(object):
             # send results to server
             headers = {'Content-Type': 'application/json'}
             content = {'content' : base64.b64encode(str(result))}
-            response = requests.post(self.url, data=json.dumps(content),
-                                     headers=headers)
-            if response.status_code != 200:
-                NetScanner._RESULTS.put(result)
-        # Check if we have job to do
-        response = urllib.urlopen(self.url)
-        jsondata = json.loads(response.read())
-        if jsondata['status'] == 200:
-            if jsondata['order'] == 'stop':
-                # clean cache
-                self.online = []
-            elif jsondata['order'] == 'launch':
-                if jsondata['time'] == 0:
-                    self._launch_scanner()
-            # Prepare the scheduler again to keep calling this method because
-            # we have received a 200
+            tries = 0
+            response = None
+            while not response and tries < 3:
+                try:
+                    response = requests.post(self.url, data=json.dumps(content),
+                                             headers=headers)
+                except:
+                    tries += 1
+                    response = None
+            # if we cannot send the results it does not matter, the frequency
+            # of scans is higher enough (I think)
+        if LOCAL_TEST:
+            print "Launching scanner\n"
+            self._launch_scanner()
             scheduler.enter(1 * 40, 1, self._gateway, (scheduler,))
         else:
-            print " INFO: Netscanner shutting down. API key has been deleted."
+            # Check if we have job to do
+            response = urllib.urlopen(self.url)
+            jsondata = json.loads(response.read())
+            if jsondata['status'] == 200:
+                if jsondata['order'] == 'stop':
+                    # clean cache
+                    self.online = []
+                elif jsondata['order'] == 'launch':
+                    if jsondata['time'] == 0:
+                        self._launch_scanner()
+                # Prepare the scheduler again to keep calling this method
+                # because we have received a 200
+                scheduler.enter(1 * 40, 1, self._gateway, (scheduler,))
+            else:
+                print " INFO: Netscanner shutting down. API key has been" +\
+                " deleted."
 
     def _gateway_timer(self):
         scheduler = sched.scheduler(time.time, time.sleep)
