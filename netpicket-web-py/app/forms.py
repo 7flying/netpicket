@@ -61,5 +61,6 @@ class AddHostForm(Form):
                          [validators.Length(min=1, max=300,
                                             message='Max 300 characters.')],
                          description="""Comma separated values.
-                         Please choose meaningful names like 'Firefox' and 'Nginx'.""")
+                         Please choose meaningful names like
+                         'Firefox' and 'Nginx'.""")
     submit = SubmitField('Save')

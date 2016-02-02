@@ -3,7 +3,6 @@
 This module holds the views of the app.
 """
 import datetime, random, string, gevent, ast
-import config
 
 from flask.ext.login import login_user, logout_user, current_user,\
      login_required
@@ -72,7 +71,7 @@ def dashboard(section, id):
     events, lastkey, alerts, hosts, networks, acls, scans, stats = (None,) * 8
     vulns, buoys, faddnet, faddentry, faddhost = (None,) * 5
     # Checks if the user can create acl entries or manage scans (nets required)
-    can_acl, can_manage = (False,) * 2 
+    can_acl, can_manage = (False,) * 2
     if request.method == 'GET':
         if section == const.SEC_TIMELINE:
             now = datetime.datetime.now()
@@ -145,6 +144,7 @@ def dashboard(section, id):
                 hservs_clean = [x.strip() for x in hservices]
                 models.set_host(current_user.id, hname.strip(), hservs_clean)
                 hosts = models.get_user_hosts(current_user.id)
+                alerts, hosts, vulns = _get_sec_alerts()
             else:
                 hosterrors = True
         elif section == const.SEC_ACLS:
@@ -277,7 +277,6 @@ def before_request():
 
 def timeline_event_stream(user_id):
     """Handles timeline event notifications."""
-    print " [INFO] timeline get event stream"
     red_p.subscribe(const.CHAN_TIMELINE)
     while True:
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
@@ -299,7 +298,6 @@ def timeline_event_stream(user_id):
                                 'text': text, 'netid': netid,
                                 'netname': net['name']}
         if mess:
-            print mess
             mess = ast.literal_eval(mess['data'])
             # Send it to the client
             yield 'data: ' + json.dumps(mess) + '\n\n'
@@ -309,7 +307,6 @@ def timeline_event_stream(user_id):
 @login_required
 def timeline():
     """Subscribe/receive timeline events."""
-    print " [INFO] timeline"
     return Response(timeline_event_stream(current_user.id),
                     mimetype='text/event-stream')
 
