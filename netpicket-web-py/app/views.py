@@ -114,7 +114,6 @@ def dashboard(section, id):
                                           'lastscan': temp['lastscan'],
                                           'generated': temp['generated'],
                                           'key': temp['key']})
-                print "buoys:", buoys
         elif section == const.SEC_STATS:
             pass
         else:

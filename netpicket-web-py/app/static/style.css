@@ -73,9 +73,9 @@ img.center {
     border-color: #00302A; /* reference in rgb, -> value % 2 - 9*/
 }
 .btn-net-dark:hover {
-  color: #fff;
-  background-color: #0d8476; /* monochromatic 2*/
-  border-color: #0C7367; /* reference in rgb-> r - 35, g - 52, b - 35*/
+    color: #fff;
+    background-color: #0d8476; /* monochromatic 2*/
+    border-color: #0C7367; /* reference in rgb-> r - 35, g - 52, b - 35*/
 }
 
 .btn-net-normal {

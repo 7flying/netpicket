@@ -224,6 +224,7 @@ function launchBuoy(buoId) {
  *********/
 
 function updateStats(days, nets, nids, tday, nday, tweek, nweek) {
+    Chart.defaults.global.responsive = true;
     var colors = {'R': '#d9534f', 'O': '#f0ad4e', 'B': '#5bc0de'};
     var colors_high = {'R': '#e7908e', 'O': '#f6ce95', 'B': '#9bd8eb'};
     var colors_rgb = {'R': 'rgba(217,83,79, ', 'O': 'rgba(240,173,78, ',

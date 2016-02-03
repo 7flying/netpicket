@@ -50,8 +50,6 @@ class NetScanner(object):
                     self.online.append(host['mac'])
                 else:
                     self.online.append(host['address'])
-            print "Currently up:", results['up']
-            print "Currently down:", results['down']
             NetScanner._RESULTS.put(results)
 
     def _gateway(self, scheduler):
