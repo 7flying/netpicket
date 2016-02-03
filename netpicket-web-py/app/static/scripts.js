@@ -73,7 +73,7 @@ function timelineSSE() {
                 var dl = document.getElementById("timeline-updates");
                 dl.innerHTML = tableini + dl.innerHTML;
             }
-            document.getElementById("updated-ago").innerHTML = (data.date + " "
+            document.getElementById("updated-ago").innerHTML = (data.day + " "
                                                                 + data.time);
         }
     }
@@ -372,12 +372,16 @@ function changeIcon(element, classOne, classTwo) {
 /***********
  * General *
  ***********/
+var source = null;
 $(document).ready(function() {
     $('#current-year').text(new Date().getFullYear());
     
     if (window.location.href.indexOf('dashboard') > -1) {
         if (document.getElementById('updated-ago') != null) {
-             timelineSSE();
+            if (source == null) {
+                timelineSSE();
+                source = true;
+            }
         }
         if (window.location.href.indexOf('stats') > -1) {
             getStats();

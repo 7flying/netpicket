@@ -22,95 +22,52 @@ def generate_alerts(apik, buoy_content):
     # needs 'text' and 'priority'
     message = {'date': date, 'time': time, 'day': day,
                'netid': net['id'], 'netname': net['name']}
-    print " [INFO] enforcer start with ups"
-    for host in buoy_content['up']:
-        found = False
-        for entry in entries_network:
-            if host['mac'] in entry['mac'] or host['mac'] in entry['address']:
-                found = True
-                if entry['type'] == 'B':
-                    # danger: R
+    for updown in ['up', 'down']:
+        for host in buoy_content[updown]:
+            # Mac entries in our database are lowercase
+            host['mac'] = host['mac'].lower()
+            # Find an entry in the w/b lists for each host
+            found = False
+            for entry in entries_network:
+                if len(host['mac']) > 0 and host['mac'] in entry['mac']:
+                    found = True
+                    known = 'Blacklisted' if entry['type'] == 'B' else 'Known'
                     if host['mac-vendor'] and len(host['mac-vendor']) > 0:
-                        text = 'Blacklisted host {0} ({1} - {2}) connected'
-                        text = text.format(host['address'], host['mac'],
-                                           host['mac-vendor'])
+                        text = '{0} host {1} ({2} - {3}) {4}'
+                        text = text.format(known, host['address'], host['mac'],
+                                           host['mac-vendor'], updown)
                     else:
-                        text = 'Blacklisted host {0} ({1}) connected'.format(
-                            host['address'], host['mac'])
+                        if len(host['mac']) > 0:
+                            text = '{0} host {1} ({2}) {3}'.format(
+                                known, host['address'], host['mac'], updown)
+                        else:
+                            text = '{0} host {1} {2}'.format(
+                                known, host['address'], updown)
                     message['text'] = text
-                    message['priority'] = 'R'
+                    # danger: Red, info Blue
+                    message['priority'] = 'R' if entry['type'] == 'B' else 'B'
                     models.save_event(buoy['userid'], message['netid'],
                                       message['text'], message['date'],
                                       message['day'], message['time'],
                                       message['priority'])
                     red.publish(const.CHAN_TIMELINE, message)
-                else:
-                    # info: B
+                    break
+            if not found:
+                if host['mac'] and len(host['mac']) > 0:
                     if host['mac-vendor'] and len(host['mac-vendor']) > 0:
-                        text = 'Known host {0} ({1} - {2}) connected'.format(
-                            host['address'], host['mac'], host['mac-vendor'])
+                        text = 'Unknown host {0} ({1} - {2}) {3}'.format(
+                            host['address'], host['mac'], host['mac-vendor'],
+                            updown)
                     else:
-                        text = 'Known host {0} ({1}) connected'.format(
-                            host['address'], host['mac'])
-                    message['text'] = text
-                    message['priority'] = 'B'
-                    models.save_event(buoy['userid'], message['netid'],
-                                      message['text'], message['date'],
-                                      message['day'], message['time'],
-                                      message['priority'])
-                    red.publish(const.CHAN_TIMELINE, message)
-                break
-        if not found:
-            if host['mac'] and len(host['mac']) > 0:
-                if host['mac-vendor'] and len(host['mac-vendor']) > 0:
-                    text = 'Unknonw host {0} ({1} - {2}) connected'.format(
-                         host['address'], host['mac'], host['mac-vendor'])
+                        text = 'Unknown host {0} ({1}) {2}'.format(
+                            host['address'], host['mac'], updown)
                 else:
-                    text = 'Unknonw host {0} ({1}) connected'.format(
-                        host['address'], host['mac'])
-            else:
-                text = 'Unknonw host {0} connected'.format(host['address'])
-            message['text'] = text
-            message['priority'] = 'O'
-            models.save_event(buoy['userid'], message['netid'],
-                                      message['text'], message['date'],
-                                      message['day'], message['time'],
-                                      message['priority'])
-            red.publish(const.CHAN_TIMELINE, message)
-    print " [INFO] enforcer start with downs"
-    for hostmac in buoy_content['down']:
-        found = False
-        for entry in entries_network:
-            if hostmac in entry['mac'] or hostmac in entry['address']:
-                found = True
-                if entry['type'] == 'B':
-                    # danger: R
-                    text = 'Blacklisted host ({0}) disconnected'.format(hostmac)
-                    message['text'] = text
-                    message['priority'] = 'R'
-                    models.save_event(buoy['userid'], message['netid'],
-                                      message['text'], message['date'],
-                                      message['day'], message['time'],
-                                      message['priority'])
-                    red.publish(const.CHAN_TIMELINE, message)
-                else:
-                    # info: B
-                    text = 'Known host ({0}) disconnected'.format(hostmac)
-                    message['text'] = text
-                    message['priority'] = 'B'
-                    models.save_event(buoy['userid'], message['netid'],
-                                      message['text'], message['date'],
-                                      message['day'], message['time'],
-                                      message['priority'])
-                    red.publish(const.CHAN_TIMELINE, message)
-                break
-        if not found:
-            # warning: O
-            text = 'Unknonw host ({0}) disconnected'.format(hostmac)
-            message['text'] = text
-            message['priority'] = 'O'
-            models.save_event(buoy['userid'], message['netid'],
-                                      message['text'], message['date'],
-                                      message['day'], message['time'],
-                                      message['priority'])
-            red.publish(const.CHAN_TIMELINE, message)
+                    text = 'Unknown host {0} {1}'.format(host['address'],
+                                                         updown)
+                message['text'] = text
+                message['priority'] = 'O'
+                models.save_event(buoy['userid'], message['netid'],
+                                  message['text'], message['date'],
+                                  message['day'], message['time'],
+                                  message['priority'])
+                red.publish(const.CHAN_TIMELINE, message)

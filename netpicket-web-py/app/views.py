@@ -82,7 +82,7 @@ def dashboard(section, id):
                     current_user.id, date.strftime(const.STRTIME_DATE))
                 if len(tempevents) > 0:
                     events[date.strftime(const.STRTIME_DATE)] = tempevents
-            lastkey = now.strftime(const.STRTIME_DATE)
+                    lastkey = date.strftime(const.STRTIME_DATE)
         elif section == const.SEC_ALERTS:
             faddhost = AddHostForm(prefix='add-host-f')
             alerts, hosts, vulns = _get_sec_alerts()
@@ -282,7 +282,7 @@ def timeline_event_stream(user_id):
         # {'date': 20151121, 'time': 20:24, 'day': 'Wed 14 Oct',
         # 'priority': 1, 'text': 'Hello', 'net' : 1, 'netname': 'Home 2'}
         mess = red_p.get_message()
-        if False:
+        if app.config['RANDOM_TIMELINE']:
             if random.randint(0, 1) == 0:
                 now = datetime.datetime.now()
                 text = ''.join(random.choice(string.letters) for _ in range(15))
@@ -301,7 +301,7 @@ def timeline_event_stream(user_id):
             mess = ast.literal_eval(mess['data'])
             # Send it to the client
             yield 'data: ' + json.dumps(mess) + '\n\n'
-        gevent.sleep(5)
+        gevent.sleep(1)
 
 @app.route('/timeline/', methods=['GET', 'POST'])
 @login_required
