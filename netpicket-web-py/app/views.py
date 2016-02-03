@@ -72,6 +72,8 @@ def dashboard(section, id):
     vulns, buoys, faddnet, faddentry, faddhost = (None,) * 5
     # Checks if the user can create acl entries or manage scans (nets required)
     can_acl, can_manage = (False,) * 2
+    if section != const.SEC_TIMELINE:
+        red_p.unsubscribe(const.CHAN_TIMELINE)
     if request.method == 'GET':
         if section == const.SEC_TIMELINE:
             now = datetime.datetime.now()
@@ -108,9 +110,11 @@ def dashboard(section, id):
                                           'netname': temp_net['name'],
                                           'netid': temp_net['id'],
                                           'status': temp['status'],
-                                          'host': temp['lasthost'],
+                                          'host': temp_net['address'],
                                           'lastscan': temp['lastscan'],
+                                          'generated': temp['generated'],
                                           'key': temp['key']})
+                print "buoys:", buoys
         elif section == const.SEC_STATS:
             pass
         else:

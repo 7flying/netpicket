@@ -13,9 +13,11 @@ def generate_alerts(apik, buoy_content):
     """Generates alerts, warnings and info messages."""
     buoy = models.get_api_key(apik)
     entries_network = models.get_entries_network(buoy['network'])
+    network_info = models.get_network(buoy['network'])
     scantime = datetime.datetime.strptime(buoy_content['scan-time'],
                                           const.STRTIME_KEY_GENERATED)
     net = models.get_network(buoy['network'])
+    models.set_last_host_scan(apik, net['address'], scantime)
     date = scantime.strftime(const.STRTIME_DATE)
     time = scantime.strftime(const.STRTIME_TIME)
     day = scantime.strftime(const.STRTIME_DAY)
@@ -29,7 +31,20 @@ def generate_alerts(apik, buoy_content):
             # Find an entry in the w/b lists for each host
             found = False
             for entry in entries_network:
-                if len(host['mac']) > 0 and host['mac'] in entry['mac']:
+                if len(host['mac']) == 0:
+                    # check if the host is the buoy
+                    if host['address'] == network_info['address']:
+                        found = True
+                        message['priority'] = 'G'
+                        message['text'] = 'Buoy {0} up and running'.format(
+                            host['address'])
+                        models.save_event(buoy['userid'], message['netid'],
+                                          message['text'], message['date'],
+                                          message['day'], message['time'],
+                                          message['priority'])
+                        red.publish(const.CHAN_TIMELINE, message)
+                        break
+                elif len(host['mac']) > 0 and host['mac'] in entry['mac']:
                     found = True
                     known = 'Blacklisted' if entry['type'] == 'B' else 'Known'
                     if host['mac-vendor'] and len(host['mac-vendor']) > 0:

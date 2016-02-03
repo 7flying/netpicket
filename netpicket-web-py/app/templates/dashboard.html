@@ -788,7 +788,7 @@
       </p>
       <p><strong>Buoys IP: </strong>
         {% if buo['host'] and buo['host']|length != 0 %}
-        {{buo['']}}{% else %}Not available.{% endif %}
+        {{buo['host']}}{% else %}Not available.{% endif %}
       </p>
       {% endif %}
       <div>
@@ -803,6 +803,7 @@
       </div>
       <!-- info about api key -->
       <div class="collapse" id="{{'coll-key-'~buo['id']}}">
+        <p><strong>API generated at: </strong>{{buo['generated']}}</strong></p>
         <p>This API key is for private use,
           <strong>do not share the key.</strong>
         </p>
