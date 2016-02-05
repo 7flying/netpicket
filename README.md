@@ -24,14 +24,16 @@ Project root ```netpicket/netpicket-web-py```
 The authentication it is done via a Google account, so you will need to generate
 an auth API key for your project. Then export the client secret:
 
-```
+```bash
 export G_CLIENT_SECRET="the-secret"
 ```
 
-1. Install dependencies.
+1. **Install dependencies**
 
-   ```sudo pip install -r requirements.txt```
-2. Setup SQL database.
+   ```bash
+   sudo pip install -r requirements.txt
+   ```
+2. **Setup SQL database**
 
    There are two options for this. If the ```TESTING``` flag is set to
    ```True``` we will connect to a sqlite db engine, otherwise we will connect
@@ -40,7 +42,7 @@ export G_CLIENT_SECRET="the-secret"
    You can change both the flag and add any other engine at: ```config.py```
 
    Setup the following variables:
-   ```
+   ```bash
    # Mandatory for both configurations:
    export DB_NAME="your-db-name"
    # Just for MySQL:
@@ -54,7 +56,7 @@ export G_CLIENT_SECRET="the-secret"
    Netpicket will not use the SQL extensively, it is just for the typical
    ```User``` table. So a sqlite db may be enough.
 
-3. Setup NoSQL database.
+3. **Setup NoSQL database**
  
    Again, if ```TESTING``` is set to ```True``` we will try to find a local
    Redis instance, otherwise we will look for a Redis host somewhere else.
@@ -63,7 +65,7 @@ export G_CLIENT_SECRET="the-secret"
 
    Download and compile the latest Redis:
 
-   ```
+   ```bash
    wget http://download.redis.io/redis-stable.tar.gz
    tar xzf redis-stable.tar.gz
    cd redis-stable
@@ -83,7 +85,7 @@ export G_CLIENT_SECRET="the-secret"
 
    Finally launch Redis: ```redis-server```.
 
-4. Launch Netpicket dashboard:
+4. **Launch Netpicket dashboard!**
 
    ```gunicorn -b 0.0.0.0:8000 -k gevent wsgi:app```
 
@@ -96,7 +98,7 @@ completeness.
 Project root: ```netpicket```.
 
 1. Copy ```requirements.txt``` and ```netscanner.py``` to your buoy.
-2. Install dependencies: ```sudo pip install -r requirements.txt```.
+2. Install dependencies: ```sudo pip install -r requirements.txt```
 3. (Assuming that you have created a network and a key for that network on
    Netpicket dashboard)
 
@@ -106,9 +108,7 @@ Project root: ```netpicket```.
 
    Then launch the buoy:
 
-   ```
-   sudo python netscanner.py <your-api-key> <network-to-scan>
-   ```
+   ```sudo python netscanner.py <your-api-key> <network-to-scan>```
 
    Note that we need admin privileges since we are looking for MAC addresses.
 
