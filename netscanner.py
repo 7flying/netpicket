@@ -11,7 +11,7 @@ from libnmap.parser import NmapParser, NmapParserException
 
 DATETIME_FORMAT = '%d/%m/%Y - %-H:%M'
 
-LOCAL_TEST = False
+LOCAL = True
 
 class NetScanner(object):
     """Network scanner"""
@@ -25,7 +25,11 @@ class NetScanner(object):
          # Records the last hosts who where online
         self.online = []
         self.uuid = key
-        self.url = 'http://127.0.0.1:8000/netscan/v1/work/' + self.uuid
+        if LOCAL:
+            self.url = 'http://127.0.0.1:8000/netscan/v1/work/' + self.uuid
+        else:
+            self.url = 'http://ec2-52-16-196-41.eu-west-1.' +\
+              'compute.amazonaws.com/netscan/v1/work/' + self.uuid
 
     def _scanner(self, option='-sn'):
         """Scans the network"""
@@ -75,26 +79,21 @@ class NetScanner(object):
                     response = None
             # if we cannot send the results it does not matter, the frequency
             # of scans is higher enough (I think)
-        if LOCAL_TEST:
-            print "Launching scanner\n"
-            self._launch_scanner()
+        # Check if we have job to do
+        response = urllib.urlopen(self.url)
+        jsondata = json.loads(response.read())
+        if jsondata['status'] == 200:
+            if jsondata['order'] == 'stop':
+                # clean cache
+                self.online = []
+            elif jsondata['order'] == 'launch':
+                if jsondata['time'] == 0:
+                    self._launch_scanner()
+            # Prepare the scheduler again to keep calling this method
+            # because we have received a 200
             scheduler.enter(1 * 40, 1, self._gateway, (scheduler,))
         else:
-            # Check if we have job to do
-            response = urllib.urlopen(self.url)
-            jsondata = json.loads(response.read())
-            if jsondata['status'] == 200:
-                if jsondata['order'] == 'stop':
-                    # clean cache
-                    self.online = []
-                elif jsondata['order'] == 'launch':
-                    if jsondata['time'] == 0:
-                        self._launch_scanner()
-                # Prepare the scheduler again to keep calling this method
-                # because we have received a 200
-                scheduler.enter(1 * 40, 1, self._gateway, (scheduler,))
-            else:
-                print " INFO: Netscanner shutting down. API key has been" +\
+            print " INFO: Netscanner shutting down. API key has been" +\
                 " deleted."
 
     def _gateway_timer(self):

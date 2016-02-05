@@ -5,7 +5,7 @@ import uuid
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-TESTING = False
+TESTING = True
 
 SECRET_KEY = str(uuid.uuid4())
 
